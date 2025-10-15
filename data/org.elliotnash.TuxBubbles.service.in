@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.elliotnash.TuxBubbles
+Exec=@bindir@/tuxbubbles --gapplication-service

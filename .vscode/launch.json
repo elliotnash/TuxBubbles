@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "name": "Debug",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/builddir/src/${workspaceFolderBasename}",
+            "preLaunchTask": "Meson: Build all targets"
+        }
+    ]
+}
