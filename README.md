@@ -1,3 +1,3 @@
 # TuxBubbles
 
-A description of this project.
+A native client for BlueBubbles, written in Vala with LibAdwaita and GTK4 

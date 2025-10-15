@@ -3,6 +3,6 @@
 data/org.elliotnash.TuxBubbles.desktop.in
 data/org.elliotnash.TuxBubbles.metainfo.xml.in
 data/org.elliotnash.TuxBubbles.gschema.xml
-src/main.vala
-src/window.vala
-src/window.blp
+src/app/main.vala
+src/ui/window.vala
+src/ui/window.blp

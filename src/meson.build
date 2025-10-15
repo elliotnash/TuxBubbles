@@ -1,16 +1,21 @@
 tuxbubbles_sources = [
-  'main.vala',
-  'application.vala',
-  'window.vala',
+  'app/main.vala',
+  'app/application.vala',
+  'ui/window.vala',
 ]
 
 blueprints = custom_target('blueprints',
   input: files(
-    'shortcuts-dialog.blp',
-    'window.blp',
+    'ui/shortcuts-dialog.blp',
+    'ui/window.blp',
   ),
   output: '.',
-  command: [find_program('blueprint-compiler'), 'batch-compile', '@OUTPUT@', '@CURRENT_SOURCE_DIR@', '@INPUT@'],
+  command: [
+    find_program('blueprint-compiler'), 'batch-compile',
+    meson.current_build_dir() / 'ui',              # output directory for generated .ui files
+    meson.current_source_dir() / 'ui',             # base directory for sources
+    '@INPUT@'
+  ],
 )
 
 tuxbubbles_deps = [
@@ -20,7 +25,7 @@ tuxbubbles_deps = [
 ]
 
 tuxbubbles_sources += gnome.compile_resources('tuxbubbles-resources',
-  'tuxbubbles.gresource.xml',
+  'ui/tuxbubbles.gresource.xml',
   dependencies: blueprints,
   c_name: 'tuxbubbles'
 )
