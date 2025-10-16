@@ -3,22 +3,25 @@ using Adw 1;
 
 template $TuxBubblesMessageComposer: Adw.Bin {
   child: Gtk.Box composer_box {
-    orientation: vertical;
+    orientation: horizontal;
     spacing: 6;
+    margin-bottom: 8;
+    margin-start: 8;
+    margin-end: 8;
+    hexpand: true;
 
     Gtk.Entry entry { 
       placeholder-text: _("Type a message…");
+      hexpand: true;
     }
 
     Gtk.Box row {
       spacing: 6;
       homogeneous: false;
       Gtk.Button send_btn { 
-        label: _("Send"); 
+        icon-name: "send-symbolic";
         css-classes: ["suggested-action"]; 
       }
     }
   };
 }
-
-

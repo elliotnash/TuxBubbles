@@ -11,5 +11,8 @@ template $TuxBubblesConversationViewPage: Adw.NavigationPage {
     content: Gtk.ScrolledWindow scroller {
       child: Gtk.ListView messages_view {};
     };
+
+    [bottom]
+    $TuxBubblesMessageComposer composer {}
   }
 }

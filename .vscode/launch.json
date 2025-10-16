@@ -1,11 +1,30 @@
 {
     "configurations": [
         {
-            "name": "Debug",
+            "name": "(lldb) Debug",
             "type": "lldb",
+            "cwd": "${workspaceFolder}",
             "request": "launch",
             "program": "${workspaceFolder}/builddir/src/${workspaceFolderBasename}",
             "preLaunchTask": "Meson: Build all targets"
+        },
+        {
+            "name": "(gdb) Debug",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/builddir/src/${workspaceFolderBasename}",
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "preLaunchTask": "Meson: Build all targets",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
         }
     ]
 }

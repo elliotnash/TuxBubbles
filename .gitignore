@@ -1,5 +1,7 @@
 /subprojects/blueprint-compiler
 
+builddir/
+
 .cursor
 .idea
 .fleet

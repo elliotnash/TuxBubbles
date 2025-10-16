@@ -30,15 +30,18 @@ blueprints = custom_target('blueprints',
 tuxbubbles_deps = [
   config_dep,
   dependency('gtk4'),
-  dependency('libadwaita-1', version: '>= 1.6'),
+  dependency('libadwaita-1', version: '>= 1.8'),
 ]
 
-tuxbubbles_sources += gnome.compile_resources('tuxbubbles-resources',
-  'ui/tuxbubbles.gresource.xml',
+ui_resources = gnome.compile_resources('ui-resources',
+  'ui/ui_resources.gresource.xml',
   source_dir: [meson.current_build_dir() / 'ui', meson.current_source_dir() / 'ui'],
   dependencies: blueprints,
-  c_name: 'tuxbubbles'
+  c_name: 'ui_resources'
 )
+
+tuxbubbles_sources += ui_resources
+tuxbubbles_sources += resources
 
 executable('tuxbubbles', tuxbubbles_sources,
   dependencies: tuxbubbles_deps,
