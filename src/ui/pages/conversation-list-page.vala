@@ -19,7 +19,7 @@
  */
 
 [GtkTemplate (ui = "/org/elliotnash/TuxBubbles/pages/conversation-list-page.ui")]
-public class TuxBubbles.ConversationListPage : Adw.Bin {
+public class TuxBubbles.ConversationListPage : Adw.NavigationPage {
     [GtkChild]
     private unowned Gtk.ListView list_view;
 

@@ -7,98 +7,13 @@ template $TuxBubblesWindow: Adw.ApplicationWindow {
   default-height: 600;
 
   content: Adw.Bin {
-    // [top]
-    // Adw.HeaderBar {
-    //   [end]
-    //   MenuButton {
-    //     primary: true;
-    //     icon-name: "open-menu-symbolic";
-    //     tooltip-text: _("Main Menu");
-    //     menu-model: primary_menu;
-    //   }
-    // }
-
     Adw.NavigationSplitView split_view {
+      // TODO: Add compact mode
       // collapsed: bind template.root as <$Window>.compact;
 
-      sidebar: Adw.NavigationPage sidebar_page {
-        title: _("Conversations");
+      sidebar: $TuxBubblesConversationListPage sidebar_page {};
 
-        Adw.ToolbarView {
-          [top]
-          Adw.HeaderBar header_bar {
-            [end]
-            MenuButton {
-              primary: true;
-              icon-name: "open-menu-symbolic";
-              tooltip-text: _("Main Menu");
-              menu-model: primary_menu;
-            }
-          }
-        }
-
-        // Adw.ToolbarView {
-        //   [top]
-        //   Adw.HeaderBar header_bar {
-        //     show-title: true;
-
-        //     [end]
-        //     Gtk.MenuButton appmenu_button {
-        //       valign: center;
-        //       icon-name: "menu-primary-symbolic";
-        //       menu-model: primary_menu;
-        //       primary: true;
-        //       tooltip-text: _("Main Menu");
-        //     }
-
-        //     [end]
-        //     Gtk.ToggleButton search_button {
-        //       valign: center;
-        //       icon-name: "system-search-symbolic";
-        //       active: bind room_search.search-mode-enabled;
-        //       action-name: "session.toggle-room-search";
-        //       tooltip-text: _("Toggle Room Search");
-        //     }
-        //   }
-
-        //   [top]
-        //   Gtk.SearchBar room_search {
-        //     child: Gtk.SearchEntry room_search_entry {
-        //       hexpand: true;
-        //     };
-
-        //     accessibility {
-        //       label: _("Room Search");
-        //       description: _("Search for a room");
-        //     }
-        //   }
-        // }
-      };
-
-      content: Adw.NavigationPage content_page {
-        title: _("Messages");
-
-        // Adw.ToolbarView {
-        //   [top]
-        //   Adw.HeaderBar {
-        //     [end]
-        //     MenuButton {
-        //       primary: true;
-        //       icon-name: "open-menu-symbolic";
-        //       tooltip-text: _("Main Menu");
-        //       menu-model: primary_menu;
-        //     }
-        //   }
-        // }
-      };
+      content: $TuxBubblesConversationViewPage content_page {};
     }
   };
-}
-
-menu primary_menu {
-  section {
-    item { label: _("_Preferences"); action: "app.preferences"; }
-    item { label: _("_Keyboard Shortcuts"); action: "app.shortcuts"; }
-    item { label: _("_About TuxBubbles"); action: "app.about"; }
-  }
 }

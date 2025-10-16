@@ -1,10 +1,15 @@
 using Gtk 4.0;
 using Adw 1;
 
-template $TuxBubblesConversationViewPage: Adw.Bin {
-  child: Adw.ToolbarView toolbar_view {
+template $TuxBubblesConversationViewPage: Adw.NavigationPage {
+  title: _("Messages");
+  
+  Adw.ToolbarView toolbar_view {
+    [top]
+    Adw.HeaderBar header_bar {}
+  
     content: Gtk.ScrolledWindow scroller {
       child: Gtk.ListView messages_view {};
     };
-  };
+  }
 }

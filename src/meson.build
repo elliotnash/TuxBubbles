@@ -30,7 +30,7 @@ blueprints = custom_target('blueprints',
 tuxbubbles_deps = [
   config_dep,
   dependency('gtk4'),
-  dependency('libadwaita-1', version: '>= 1.4'),
+  dependency('libadwaita-1', version: '>= 1.6'),
 ]
 
 tuxbubbles_sources += gnome.compile_resources('tuxbubbles-resources',

@@ -21,27 +21,22 @@
 [GtkTemplate (ui = "/org/elliotnash/TuxBubbles/window.ui")]
 public class TuxBubbles.Window : Adw.ApplicationWindow {
 	[GtkChild]
-	private unowned Adw.NavigationPage sidebar_page;
+	private unowned TuxBubbles.ConversationListPage sidebar_page;
 	[GtkChild]
-	private unowned Adw.NavigationPage content_page;
-
-	private TuxBubbles.ConversationListPage list_page;
-	private TuxBubbles.ConversationViewPage view_page;
+	private unowned TuxBubbles.ConversationViewPage content_page;
 
 	public Window (Gtk.Application app) {
 		Object (application: app);
 	}
 
+	static construct {
+        typeof(TuxBubbles.ConversationListPage).ensure ();
+        typeof(TuxBubbles.ConversationViewPage).ensure ();
+    }
+
 	construct {
-		list_page = new TuxBubbles.ConversationListPage ();
-		view_page = new TuxBubbles.ConversationViewPage ();
-
-		// Set the pages as children of the NavigationPage objects
-		sidebar_page.set_child (list_page);
-		content_page.set_child (view_page);
-
-		list_page.chat_selected.connect ((chat_id) => {
-			view_page.load_chat (chat_id);
-		});
+		//  list_page.chat_selected.connect ((chat_id) => {
+		//  	view_page.load_chat (chat_id);
+		//  });
 	}
 }

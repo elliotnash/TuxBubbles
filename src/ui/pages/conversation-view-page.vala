@@ -1,7 +1,7 @@
 /* conversation-view-page.vala */
 
 [GtkTemplate (ui = "/org/elliotnash/TuxBubbles/pages/conversation-view-page.ui")]
-public class TuxBubbles.ConversationViewPage : Adw.Bin {
+public class TuxBubbles.ConversationViewPage : Adw.NavigationPage {
     [GtkChild]
     private unowned Adw.ToolbarView toolbar_view;
 
@@ -15,5 +15,3 @@ public class TuxBubbles.ConversationViewPage : Adw.Bin {
     public void load_chat (string chat_id) {
     }
 }
-
-
