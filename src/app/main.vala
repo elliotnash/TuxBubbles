@@ -23,6 +23,6 @@ int main (string[] args) {
     Intl.bind_textdomain_codeset (Config.GETTEXT_PACKAGE, "UTF-8");
     Intl.textdomain (Config.GETTEXT_PACKAGE);
 
-    var app = new Tuxbubbles.Application ();
+    var app = new TuxBubbles.Application ();
     return app.run (args);
 }

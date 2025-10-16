@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-public class Tuxbubbles.Application : Adw.Application {
+public class TuxBubbles.Application : Adw.Application {
     public Application () {
         Object (
             application_id: "org.elliotnash.TuxBubbles",
@@ -39,7 +39,7 @@ public class Tuxbubbles.Application : Adw.Application {
 
     public override void activate () {
         base.activate ();
-        var win = this.active_window ?? new Tuxbubbles.Window (this);
+        var win = this.active_window ?? new TuxBubbles.Window (this);
         win.present ();
     }
 

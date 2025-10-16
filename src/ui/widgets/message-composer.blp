@@ -1,0 +1,24 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $TuxBubblesMessageComposer: Adw.Bin {
+  child: Gtk.Box composer_box {
+    orientation: vertical;
+    spacing: 6;
+
+    Gtk.Entry entry { 
+      placeholder-text: _("Type a message…");
+    }
+
+    Gtk.Box row {
+      spacing: 6;
+      homogeneous: false;
+      Gtk.Button send_btn { 
+        label: _("Send"); 
+        css-classes: ["suggested-action"]; 
+      }
+    }
+  };
+}
+
+

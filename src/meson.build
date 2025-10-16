@@ -2,12 +2,18 @@ tuxbubbles_sources = [
   'app/main.vala',
   'app/application.vala',
   'ui/window.vala',
+  'ui/pages/conversation-list-page.vala',
+  'ui/pages/conversation-view-page.vala',
+  'ui/widgets/message-composer.vala',
 ]
 
 blueprints = custom_target('blueprints',
   input: files(
     'ui/shortcuts-dialog.blp',
     'ui/window.blp',
+    'ui/pages/conversation-list-page.blp',
+    'ui/pages/conversation-view-page.blp',
+    'ui/widgets/message-composer.blp',
   ),
   output: '.',
   command: [
@@ -26,6 +32,7 @@ tuxbubbles_deps = [
 
 tuxbubbles_sources += gnome.compile_resources('tuxbubbles-resources',
   'ui/tuxbubbles.gresource.xml',
+  source_dir: [meson.current_build_dir() / 'ui', meson.current_source_dir() / 'ui'],
   dependencies: blueprints,
   c_name: 'tuxbubbles'
 )

@@ -1,9 +1,9 @@
 using Gtk 4.0;
 using Adw 1;
 
-template $TuxbubblesWindow: Adw.ApplicationWindow {
+template $TuxBubblesWindow: Adw.ApplicationWindow {
   title: _("TuxBubbles");
-  default-width: 800;
+  default-width: 900;
   default-height: 600;
 
   content: Adw.ToolbarView {
@@ -18,31 +18,24 @@ template $TuxbubblesWindow: Adw.ApplicationWindow {
       }
     }
 
-    content: Label label {
-      label: _("Hello, World!");
+    content: Adw.NavigationSplitView split_view {
+      // collapsed: bind template.root as <$Window>.compact;
 
-      styles [
-        "title-1",
-      ]
+      sidebar: Adw.NavigationPage sidebar_page {
+        title: _("Conversations");
+      };
+
+      content: Adw.NavigationPage content_page {
+        title: _("Messages");
+      };
     };
   };
 }
 
 menu primary_menu {
   section {
-    item {
-      label: _("_Preferences");
-      action: "app.preferences";
-    }
-
-    item {
-      label: _("_Keyboard Shortcuts");
-      action: "app.shortcuts";
-    }
-
-    item {
-      label: _("_About TuxBubbles");
-      action: "app.about";
-    }
+    item { label: _("_Preferences"); action: "app.preferences"; }
+    item { label: _("_Keyboard Shortcuts"); action: "app.shortcuts"; }
+    item { label: _("_About TuxBubbles"); action: "app.about"; }
   }
 }

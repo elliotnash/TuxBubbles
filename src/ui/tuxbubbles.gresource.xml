@@ -3,5 +3,8 @@
   <gresource prefix="/org/elliotnash/TuxBubbles">
     <file preprocess="xml-stripblanks">window.ui</file>
     <file preprocess="xml-stripblanks">shortcuts-dialog.ui</file>
+    <file preprocess="xml-stripblanks">pages/conversation-list-page.ui</file>
+    <file preprocess="xml-stripblanks">pages/conversation-view-page.ui</file>
+    <file preprocess="xml-stripblanks">widgets/message-composer.ui</file>
   </gresource>
 </gresources>
