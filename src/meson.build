@@ -5,6 +5,8 @@ tuxbubbles_sources = [
   'ui/pages/conversation-list-page.vala',
   'ui/pages/conversation-view-page.vala',
   'ui/widgets/message-composer.vala',
+  'ui/widgets/conversation-row.vala',
+  'domain/models/chat.vala',
 ]
 
 blueprints = custom_target('blueprints',
@@ -14,6 +16,7 @@ blueprints = custom_target('blueprints',
     'ui/pages/conversation-list-page.blp',
     'ui/pages/conversation-view-page.blp',
     'ui/widgets/message-composer.blp',
+    'ui/widgets/conversation-row.blp',
   ),
   output: '.',
   command: [

@@ -1,0 +1,62 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $TuxBubblesConversationRow: Adw.Bin {
+  child: Gtk.Box row_box {
+    orientation: horizontal;
+    spacing: 12;
+    margin-start: 12;
+    margin-end: 12;
+    margin-top: 6;
+    margin-bottom: 6;
+
+    Adw.Avatar avatar {
+      size: 48;
+      text: "?";
+    }
+
+    Gtk.Box content_box {
+      orientation: vertical;
+      hexpand: true;
+      valign: center;
+
+      Gtk.Box header_box {
+        orientation: horizontal;
+        spacing: 8;
+
+        Gtk.Label name_label {
+          label: "Contact Name";
+          css-classes: ["title-4"];
+        //   ellipsize: Pango.EllipsizeMode.END;
+          hexpand: true;
+          halign: start;
+        }
+
+        Gtk.Label time_label {
+          label: "12:34";
+          css-classes: ["caption"];
+          valign: start;
+        }
+      }
+
+      Gtk.Box message_box {
+        orientation: horizontal;
+        spacing: 8;
+
+        Gtk.Label message_label {
+          label: "Last message preview...";
+          css-classes: ["body"];
+        //   ellipsize: Pango.EllipsizeMode.END;
+          hexpand: true;
+          halign: start;
+        }
+
+        Gtk.Label unread_label {
+          label: "2";
+          css-classes: ["badge"];
+          visible: false;
+        }
+      }
+    }
+  };
+}

@@ -6,29 +6,92 @@ template $TuxBubblesWindow: Adw.ApplicationWindow {
   default-width: 900;
   default-height: 600;
 
-  content: Adw.ToolbarView {
-    [top]
-    Adw.HeaderBar {
-      [end]
-      MenuButton {
-        primary: true;
-        icon-name: "open-menu-symbolic";
-        tooltip-text: _("Main Menu");
-        menu-model: primary_menu;
-      }
-    }
+  content: Adw.Bin {
+    // [top]
+    // Adw.HeaderBar {
+    //   [end]
+    //   MenuButton {
+    //     primary: true;
+    //     icon-name: "open-menu-symbolic";
+    //     tooltip-text: _("Main Menu");
+    //     menu-model: primary_menu;
+    //   }
+    // }
 
-    content: Adw.NavigationSplitView split_view {
+    Adw.NavigationSplitView split_view {
       // collapsed: bind template.root as <$Window>.compact;
 
       sidebar: Adw.NavigationPage sidebar_page {
         title: _("Conversations");
+
+        Adw.ToolbarView {
+          [top]
+          Adw.HeaderBar header_bar {
+            [end]
+            MenuButton {
+              primary: true;
+              icon-name: "open-menu-symbolic";
+              tooltip-text: _("Main Menu");
+              menu-model: primary_menu;
+            }
+          }
+        }
+
+        // Adw.ToolbarView {
+        //   [top]
+        //   Adw.HeaderBar header_bar {
+        //     show-title: true;
+
+        //     [end]
+        //     Gtk.MenuButton appmenu_button {
+        //       valign: center;
+        //       icon-name: "menu-primary-symbolic";
+        //       menu-model: primary_menu;
+        //       primary: true;
+        //       tooltip-text: _("Main Menu");
+        //     }
+
+        //     [end]
+        //     Gtk.ToggleButton search_button {
+        //       valign: center;
+        //       icon-name: "system-search-symbolic";
+        //       active: bind room_search.search-mode-enabled;
+        //       action-name: "session.toggle-room-search";
+        //       tooltip-text: _("Toggle Room Search");
+        //     }
+        //   }
+
+        //   [top]
+        //   Gtk.SearchBar room_search {
+        //     child: Gtk.SearchEntry room_search_entry {
+        //       hexpand: true;
+        //     };
+
+        //     accessibility {
+        //       label: _("Room Search");
+        //       description: _("Search for a room");
+        //     }
+        //   }
+        // }
       };
 
       content: Adw.NavigationPage content_page {
         title: _("Messages");
+
+        // Adw.ToolbarView {
+        //   [top]
+        //   Adw.HeaderBar {
+        //     [end]
+        //     MenuButton {
+        //       primary: true;
+        //       icon-name: "open-menu-symbolic";
+        //       tooltip-text: _("Main Menu");
+        //       menu-model: primary_menu;
+        //     }
+        //   }
+        // }
       };
-    };
+    }
   };
 }
 
