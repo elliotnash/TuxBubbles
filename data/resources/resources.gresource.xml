@@ -2,5 +2,6 @@
 <gresources>
   <gresource prefix="/org/elliotnash/TuxBubbles/">
     <file preprocess="xml-stripblanks">icons/scalable/actions/send-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/apps/org.elliotnash.TuxBubbles.svg</file>
   </gresource>
 </gresources>
