@@ -26,7 +26,7 @@ template $TuxBubblesConversationRow: Adw.Bin {
 
         Gtk.Label name_label {
           label: "Contact Name";
-          css-classes: ["title-4"];
+          styles ["title-4"]
         //   ellipsize: Pango.EllipsizeMode.END;
           hexpand: true;
           halign: start;
@@ -34,7 +34,7 @@ template $TuxBubblesConversationRow: Adw.Bin {
 
         Gtk.Label time_label {
           label: "12:34";
-          css-classes: ["caption"];
+          styles ["caption"]
           valign: start;
         }
       }
@@ -45,7 +45,7 @@ template $TuxBubblesConversationRow: Adw.Bin {
 
         Gtk.Label message_label {
           label: "Last message preview...";
-          css-classes: ["body"];
+          styles ["body"]
         //   ellipsize: Pango.EllipsizeMode.END;
           hexpand: true;
           halign: start;
@@ -53,7 +53,7 @@ template $TuxBubblesConversationRow: Adw.Bin {
 
         Gtk.Label unread_label {
           label: "2";
-          css-classes: ["badge"];
+          styles ["badge"]
           visible: false;
         }
       }

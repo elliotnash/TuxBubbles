@@ -5,21 +5,24 @@ template $TuxBubblesOnboarding: Adw.Bin {
   Adw.ToolbarView {
     [top]
     Adw.HeaderBar {
+      [start]
+      Gtk.Revealer previous_btn_revealer {
+        reveal-child: false;
+        transition-type: crossfade;
+        child: Gtk.Button previous_btn {
+          tooltip-text: _("Previous Page");
+          icon-name: "go-previous-symbolic";
+        };
+      }
       [end]
       Gtk.Button {
         action-name: "app.about";
         tooltip-text: _("About TuxBubbles");
         icon-name: "help-about-symbolic";
-
-        accessibility {
-          label: _("About TuxBubbles");
-        }
       }
     }
 
     content: Gtk.Stack onboarding_stack {
-      transition-type: slide_left;
-
       // First onboarding page, shows welcome message and continue buttton.
       Gtk.StackPage {
         name: "welcome";
@@ -51,8 +54,41 @@ template $TuxBubblesOnboarding: Adw.Bin {
         name: "connection";
         title: _("Connect to your BlueBubbles instance");
 
-        child: Text {
-          text: _("Text");
+        child: Adw.StatusPage connect_status_page {
+          // icon-name: "org.elliotnash.TuxBubbles";
+          title: _("Connect to BlueBubbles server");
+          Gtk.Box {
+            orientation: vertical;
+            hexpand: false;
+            halign: center;
+            spacing: 36;
+
+            Gtk.ListBox {
+              styles [
+                "boxed-list",
+              ]
+
+              Adw.EntryRow server_url_entry {
+                input-purpose: url;
+                title: _("BlueBubbles server URL");
+              }
+              Adw.PasswordEntryRow server_password_entry {
+                input-purpose: password;
+                title: _("BlueBubbles server password");
+              }
+            }
+
+            Gtk.Button connect_btn {
+              label: _("Connect");
+              halign: center;
+              width-request: 120;
+
+              styles [
+                "suggested-action",
+                "pill"
+              ]
+            }
+          }
         };
       }
     };
