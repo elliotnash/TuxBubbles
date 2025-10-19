@@ -4,9 +4,11 @@ tuxbubbles_sources = [
   'ui/window.vala',
   'ui/pages/conversation-list-page.vala',
   'ui/pages/conversation-view-page.vala',
+  'ui/pages/onboarding.vala',
   'ui/widgets/message-composer.vala',
   'ui/widgets/conversation-row.vala',
   'domain/models/chat.vala',
+  'services/settings.vala',
 ]
 
 blueprints = custom_target('blueprints',
@@ -15,6 +17,7 @@ blueprints = custom_target('blueprints',
     'ui/window.blp',
     'ui/pages/conversation-list-page.blp',
     'ui/pages/conversation-view-page.blp',
+    'ui/pages/onboarding.blp',
     'ui/widgets/message-composer.blp',
     'ui/widgets/conversation-row.blp',
   ),
@@ -31,6 +34,7 @@ tuxbubbles_deps = [
   config_dep,
   dependency('gtk4'),
   dependency('libadwaita-1', version: '>= 1.8'),
+  dependency('libsecret-1'),
 ]
 
 ui_resources = gnome.compile_resources('ui-resources',

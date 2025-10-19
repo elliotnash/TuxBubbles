@@ -5,6 +5,7 @@
     <file preprocess="xml-stripblanks">shortcuts-dialog.ui</file>
     <file preprocess="xml-stripblanks">pages/conversation-list-page.ui</file>
     <file preprocess="xml-stripblanks">pages/conversation-view-page.ui</file>
+    <file preprocess="xml-stripblanks">pages/onboarding.ui</file>
     <file preprocess="xml-stripblanks">widgets/message-composer.ui</file>
     <file preprocess="xml-stripblanks">widgets/conversation-row.ui</file>
   </gresource>

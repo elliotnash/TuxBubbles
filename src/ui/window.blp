@@ -6,14 +6,87 @@ template $TuxBubblesWindow: Adw.ApplicationWindow {
   default-width: 900;
   default-height: 600;
 
-  content: Adw.Bin {
-    Adw.NavigationSplitView split_view {
-      // TODO: Add compact mode
-      // collapsed: bind template.root as <$Window>.compact;
+// TODO: Verify Gtk.WindowHandle operation.
+  content: Adw.ToastOverlay toast_overlay {
+    Gtk.Stack main_stack {
+      transition-type: crossfade;
 
-      sidebar: $TuxBubblesConversationListPage sidebar_page {};
+      Gtk.StackPage {
+        name: "loading";
+        title: _("Loading");
 
-      content: $TuxBubblesConversationViewPage content_page {};
+        child: Adw.ToolbarView {
+          [top]
+          Adw.HeaderBar {
+            // [start]
+            // $AccountSwitcherButton {}
+
+            [end]
+            Gtk.Button {
+              action-name: "app.about";
+              tooltip-text: _("About TuxBubbles");
+              icon-name: "help-about-symbolic";
+
+              accessibility {
+                label: _("About TuxBubbles");
+              }
+            }
+          }
+
+          content: Gtk.Box {
+            orientation: vertical;
+
+            // $OfflineBanner {}
+
+            Gtk.Box {
+              orientation: vertical;
+              valign: center;
+              vexpand: true;
+              spacing: 24;
+
+              Adw.Spinner {
+                height-request: 64;
+                width-request: 64;
+              }
+
+              Gtk.Label {
+                halign: center;
+                justify: center;
+                wrap: true;
+                wrap-mode: word_char;
+                label: _("Fetching Messages…");
+
+                styles [
+                  "title-2",
+                ]
+              }
+            }
+          };
+        };
+      }
+
+      Gtk.StackPage {
+        name: "onboarding";
+        title: _("TuxBubbles onboarding");
+
+        child: $TuxBubblesOnboarding onboarding_page {};
+      }
+
+      Gtk.StackPage {
+        name: "session";
+        title: _("Session");
+
+        // TODO: Move this to it's own page
+        child: Adw.NavigationSplitView split_view {
+          // TODO: Add compact mode
+          // collapsed: bind template.root as <$Window>.compact;
+
+          sidebar: $TuxBubblesConversationListPage sidebar_page {};
+
+          content: $TuxBubblesConversationViewPage content_page {};
+        };
+      }
+
     }
   };
 }

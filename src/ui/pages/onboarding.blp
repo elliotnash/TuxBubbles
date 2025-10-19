@@ -1,0 +1,60 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $TuxBubblesOnboarding: Adw.Bin {
+  Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      [end]
+      Gtk.Button {
+        action-name: "app.about";
+        tooltip-text: _("About TuxBubbles");
+        icon-name: "help-about-symbolic";
+
+        accessibility {
+          label: _("About TuxBubbles");
+        }
+      }
+    }
+
+    content: Gtk.Stack onboarding_stack {
+      transition-type: slide_left;
+
+      // First onboarding page, shows welcome message and continue buttton.
+      Gtk.StackPage {
+        name: "welcome";
+        title: _("Welcome to TuxBubbles");
+
+        child: Adw.StatusPage welcome_status_page {
+          icon-name: "org.elliotnash.TuxBubbles";
+          title: _("Welcome to TuxBubbles");
+          Gtk.Box {
+            orientation: vertical;
+            hexpand: false;
+            halign: center;
+            spacing: 12;
+
+            Gtk.Button welcome_continue_btn {
+              label: _("Continue");
+              halign: center;
+
+              styles [
+                "suggested-action",
+                "pill"
+              ]
+            }
+          }
+        };
+      }
+
+      Gtk.StackPage {
+        name: "connection";
+        title: _("Connect to your BlueBubbles instance");
+
+        child: Text {
+          text: _("Text");
+        };
+      }
+    };
+  }
+}

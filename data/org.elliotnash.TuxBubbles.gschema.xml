@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="tuxbubbles">
 	<schema id="org.elliotnash.TuxBubbles" path="/org/elliotnash/TuxBubbles/">
+		<key name="server-url" type="s">
+			<default>""</default>
+			<summary>BlueBubbles Server URL</summary>
+			<description>The URL of the BlueBubbles server to connect to</description>
+		</key>
+		<key name="compact-mode" type="b">
+			<default>false</default>
+			<summary>Compact Mode</summary>
+			<description>Use compact layout for smaller screens</description>
+		</key>
 	</schema>
 </schemalist>

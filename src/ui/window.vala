@@ -21,20 +21,30 @@
 [GtkTemplate (ui = "/org/elliotnash/TuxBubbles/window.ui")]
 public class TuxBubbles.Window : Adw.ApplicationWindow {
 	[GtkChild]
-	private unowned TuxBubbles.ConversationListPage sidebar_page;
-	[GtkChild]
-	private unowned TuxBubbles.ConversationViewPage content_page;
+	private unowned Gtk.Stack main_stack;
+	//  [GtkChild]
+	//  private unowned TuxBubbles.ConversationListPage sidebar_page;
+	//  [GtkChild]
+	//  private unowned TuxBubbles.ConversationViewPage content_page;
 
 	public Window (Gtk.Application app) {
 		Object (application: app);
 	}
 
 	static construct {
-        typeof(TuxBubbles.ConversationListPage).ensure ();
-        typeof(TuxBubbles.ConversationViewPage).ensure ();
+        typeof(TuxBubbles.ConversationListPage).ensure();
+        typeof(TuxBubbles.ConversationViewPage).ensure();
+		typeof(TuxBubbles.Onboarding).ensure();
     }
 
 	construct {
+		// TODO: Don't bypass
+		if (TuxBubbles.Settings.instance.server_url == "" || true) {
+			// Server is not configured, should show setup
+			main_stack.set_visible_child_name ("onboarding");
+		}
+
+	
 		//  list_page.chat_selected.connect ((chat_id) => {
 		//  	view_page.load_chat (chat_id);
 		//  });
