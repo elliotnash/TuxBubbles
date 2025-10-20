@@ -126,9 +126,22 @@ public class TuxBubbles.Onboarding : Adw.Bin {
         connect_btn.sensitive = false;
         connect_btn.child = connect_btn_spinner;
 
-        // Test connection
-        yield wait(1000);
+        // Set credentials
+        Settings.instance.server_url = server_url_entry.text;
+        yield Settings.instance.store_password(server_password_entry.text);
 
+        // Test connection
+        try {
+            var response = yield APIClient.instance.ping();
+            if (response.is_success()) {
+                print("Response: %s\n", response.data.response);
+            } else {
+                print("API Error: %s\n", response.error.message);
+            }
+        } catch (Error e) {
+            print("Error connecting: %s\n", e.message);
+        }
+        
         // Restore button
         connect_btn.label = _("Connect");
         connect_btn.sensitive = true;

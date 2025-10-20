@@ -8,7 +8,9 @@ tuxbubbles_sources = [
   'ui/widgets/message-composer.vala',
   'ui/widgets/conversation-row.vala',
   'domain/models/chat.vala',
+  'domain/models/api-response.vala',
   'services/settings.vala',
+  'services/api-client.vala',
 ]
 
 blueprints = custom_target('blueprints',
@@ -35,6 +37,8 @@ tuxbubbles_deps = [
   dependency('gtk4'),
   dependency('libadwaita-1', version: '>= 1.8'),
   dependency('libsecret-1'),
+  dependency('libsoup-3.0'),
+  dependency('json-glib-1.0'),
 ]
 
 ui_resources = gnome.compile_resources('ui-resources',

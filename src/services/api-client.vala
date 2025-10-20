@@ -1,0 +1,135 @@
+
+public class TuxBubbles.APIClient : GLib.Object {
+    private static APIClient? _instance = null;
+    public static APIClient instance {
+        get {
+            if (_instance == null) {
+                _instance = new APIClient ();
+            }
+            return _instance;
+        }
+    }
+
+    private Soup.Session session;
+    private TuxBubbles.Settings settings;
+
+    private APIClient () {
+        session = new Soup.Session ();
+        settings = TuxBubbles.Settings.instance;
+    }
+
+    // Generic method to make API calls and parse responses
+    private async APIResponse<T>? make_request<T> (string endpoint, string method = "GET", Json.Node? payload = null) throws Error {
+        var server_url = settings.server_url;
+        if (server_url == "") {
+            throw new IOError.INVALID_ARGUMENT ("Server URL not configured");
+        }
+
+        var password = yield settings.retrieve_password ();
+        if (password == null) {
+            throw new IOError.INVALID_ARGUMENT ("Password not configured");
+        }
+
+        // Build URL with password parameter  
+        var url = "%s%s?password=%s".printf (
+            server_url,
+            endpoint,
+            GLib.Uri.escape_string (password, null, true)
+        );
+        
+        var message = new Soup.Message (method, url);
+
+        // Set headers
+        message.request_headers.append ("Content-Type", "application/json");
+        message.request_headers.append ("User-Agent", "TuxBubbles/1.0");
+
+        // Add payload for POST/PUT requests
+        if (payload != null && (method == "POST" || method == "PUT")) {
+            var generator = new Json.Generator ();
+            generator.set_root (payload);
+            var json_string = generator.to_data (null);
+            message.set_request_body_from_bytes ("application/json", new Bytes.take (json_string.data));
+        }
+
+        // Make the request
+        var input_stream = yield session.send_async (message, Priority.DEFAULT, null);
+        var response_data = yield input_stream.read_bytes_async (1024 * 1024, Priority.DEFAULT, null); // 1MB max
+
+        // Parse JSON response
+        var parser = new Json.Parser ();
+        parser.load_from_data ((string) response_data.get_data (), -1);
+
+        var root = parser.get_root ();
+        if (root == null) {
+            // It's expected that a some non 200 responses are not valid JSON, so throw the HTTP error.
+            // If a 200 response is not valid JSON, that's a problem.
+            if (message.status_code < 200 || message.status_code >= 300) {
+                throw new IOError.FAILED ("HTTP %u: %s".printf (message.status_code, message.reason_phrase));
+            } else {
+                throw new IOError.FAILED ("Invalid JSON response");
+            }
+        }
+
+        var root_object = root.get_object ();
+        if (root_object == null) {
+            throw new IOError.FAILED ("Response is not a JSON object");
+        }
+
+        // Extract standard response fields
+        var status = (int) root_object.get_int_member ("status");
+        var message_text = root_object.get_string_member ("message");
+        var data_node = root_object.get_member ("data");
+        var error_node = root_object.get_member ("error");
+
+        // Parse the data field based on type T
+        T? data = null;
+        if (data_node != null && !data_node.is_null ()) {
+            data = parse_data<T> (data_node);
+        }
+
+        APIError? error = null;
+        if (error_node != null && !error_node.is_null ()) {
+            error = parse_error (error_node);
+        }
+
+        return new APIResponse<T> (status, message_text, data, error);
+    }
+
+    private APIError? parse_error (Json.Node error_node) {
+        var error_object = error_node.get_object ();
+        if (error_object == null) {
+            return null;
+        }
+        var error_type = error_object.get_string_member("type");
+        var message = error_object.get_string_member("message");
+        return new APIError (error_type, message);
+    }
+
+    // Type-specific data parsing
+    private T? parse_data<T> (Json.Node data_node) {
+        if (typeof (T) == typeof (string)) {
+            return (T) data_node.get_string ();
+        } else if (typeof (T) == typeof (PingResponse)) {
+            var response_text = data_node.get_string ();
+            return (T) new PingResponse (response_text);
+        }
+        // Add more type parsers as needed
+        return null;
+    }
+
+    // Ping endpoint
+    public async APIResponse<PingResponse>? ping () throws Error {
+        return yield make_request<PingResponse> ("/api/v1/ping");
+    }
+
+    // Helper method to check if server is reachable
+    public async bool is_server_reachable () {
+        try {
+            var response = yield ping ();
+            return response != null && response.is_success ();
+        } catch (Error e) {
+            warning ("Server unreachable: %s", e.message);
+            return false;
+        }
+    }
+}
