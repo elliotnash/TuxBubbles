@@ -33,7 +33,7 @@
     ],
     "modules" : [
         {
-            "name" : "tuxbubbles",
+            "name" : "TuxBubbles",
             "builddir" : true,
             "buildsystem" : "meson",
             "sources" : [

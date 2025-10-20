@@ -44,15 +44,18 @@ public class TuxBubbles.Application : Adw.Application {
     }
 
     private void on_about_action () {
-        string[] developers = { "Unknown" };
+        string[] developers = { "Elliot Nash" };
         var about = new Adw.AboutDialog () {
-            application_name = "tuxbubbles",
+            application_name = "TuxBubbles",
             application_icon = "org.elliotnash.TuxBubbles",
-            developer_name = "Unknown",
+            developer_name = "Elliot Nash",
             translator_credits = _("translator-credits"),
             version = "0.1.0",
+            website = "https://github.com/elliotnash/TuxBubbles",
+            issue_url = "https://github.com/elliotnash/TuxBubbles/issues/new",
+            license_type = Gtk.License.GPL_3_0,
             developers = developers,
-            copyright = "© 2025 Unknown",
+            copyright = "© 2025 Elliot Nash",
         };
 
         about.present (this.active_window);
