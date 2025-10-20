@@ -11,6 +11,7 @@ tuxbubbles_sources = [
   'domain/models/api-response.vala',
   'services/settings.vala',
   'services/api-client.vala',
+  'utils.vala',
 ]
 
 blueprints = custom_target('blueprints',

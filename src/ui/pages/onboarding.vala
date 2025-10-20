@@ -20,7 +20,8 @@
 
 enum TuxBubbles.OnboardingStep {
     WELCOME = 0,
-    CONNECTION = 1;
+    CONNECTION = 1,
+    SYNC = 2;
 
     public string get_name() {
         // Remove namespace/enum name
@@ -28,7 +29,7 @@ enum TuxBubbles.OnboardingStep {
     }
 
     public OnboardingStep get_next() {
-        if (this != CONNECTION) {
+        if (this != SYNC) {
             return this + 1;
         }
         return this;
@@ -113,12 +114,7 @@ public class TuxBubbles.Onboarding : Adw.Bin {
     }
 
     private async void server_connect() {
-        string url = server_url_entry.text;
-        string password = server_password_entry.text;
-        print("Url=%s, Password=%s\n", url, password);
-
         if (!urlRegex.match(server_url_entry.text)) {
-            // TODO: send toast or banner or smth
             return;
         }
 
@@ -134,12 +130,18 @@ public class TuxBubbles.Onboarding : Adw.Bin {
         try {
             var response = yield APIClient.instance.ping();
             if (response.is_success()) {
-                print("Response: %s\n", response.data.response);
+                print("BlueBubbles server connection successful\n");
+                next_page();
             } else {
                 print("API Error: %s\n", response.error.message);
+                var message = response.status == Soup.Status.UNAUTHORIZED ? N_("Invalid credentials") : response.error?.message;
+                var toast = new Adw.Toast("<span foreground=\"red\">" + _(message) + "</span>");
+                Utils.show_toast(toast);
             }
         } catch (Error e) {
             print("Error connecting: %s\n", e.message);
+            var toast = new Adw.Toast("<span foreground=\"red\">" + _("Failed to connect to server") + "</span>");
+            Utils.show_toast(toast);
         }
         
         // Restore button

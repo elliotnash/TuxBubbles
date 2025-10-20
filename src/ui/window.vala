@@ -22,6 +22,8 @@
 public class TuxBubbles.Window : Adw.ApplicationWindow {
 	[GtkChild]
 	private unowned Gtk.Stack main_stack;
+	[GtkChild]
+	public unowned Adw.ToastOverlay toast_overlay;
 	//  [GtkChild]
 	//  private unowned TuxBubbles.ConversationListPage sidebar_page;
 	//  [GtkChild]

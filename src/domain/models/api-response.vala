@@ -31,12 +31,3 @@ public class TuxBubbles.APIError : GLib.Object {
         this.message = message;
     }
 }
-
-// Specialized response for ping endpoint
-public class TuxBubbles.PingResponse : GLib.Object {
-    public string response { get; set; }
-
-    public PingResponse (string response) {
-        this.response = response;
-    }
-}

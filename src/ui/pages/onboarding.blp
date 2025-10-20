@@ -56,7 +56,7 @@ template $TuxBubblesOnboarding: Adw.Bin {
 
         child: Adw.StatusPage connect_status_page {
           // icon-name: "org.elliotnash.TuxBubbles";
-          title: _("Connect to BlueBubbles server");
+          title: _("Connect to your BlueBubbles instance");
           Gtk.Box {
             orientation: vertical;
             hexpand: false;
@@ -87,6 +87,91 @@ template $TuxBubblesOnboarding: Adw.Bin {
                 "suggested-action",
                 "pill"
               ]
+            }
+          }
+        };
+      }
+
+      Gtk.StackPage {
+        name: "sync";
+        title: _("Sync your messages");
+
+        child: Adw.StatusPage sync_status_page {
+          // icon-name: "org.elliotnash.TuxBubbles";
+          title: _("Sync your messages");
+          Gtk.Box {
+            orientation: vertical;
+            hexpand: false;
+            halign: center;
+
+            Gtk.Box {
+              orientation: vertical;
+              spacing: 12;
+              width-request: 200;
+
+              Gtk.Adjustment history_scale_adjustment {
+                upper: 100;
+                lower: 0;
+                step-increment: 0.1;
+              } 
+
+              Gtk.Label {
+                label: _("How many messages do you want to sync?");
+              }
+
+              Gtk.ListBox {
+                width-request: 400;
+
+                styles [
+                  "boxed-list",
+                ]
+
+                Gtk.ListBoxRow {
+                  selectable: false;
+                  focusable: false;
+                  
+                  Gtk.Scale sync_history_scale {
+                    margin-start: 16;
+                    margin-end: 16;
+                    margin-top: 4;
+                    margin-bottom: 4;
+
+                    orientation: horizontal;
+                    adjustment: history_scale_adjustment;
+                    // width-request: 200;
+                    hexpand: true;
+                    sensitive: bind sync_all_toggle.active inverted;
+
+                    marks [
+                      mark (0, bottom, _("none")),
+                      mark (25, bottom, _("3 mo")),
+                      mark (50, bottom, _("6 mo")),
+                      mark (75, bottom, _("9 mo")),
+                      mark (100, bottom, _("1 yr")),
+                    ]
+                  }
+                }
+
+                Adw.SwitchRow sync_all_toggle {
+                  selectable: false;
+                  title: _("Sync all messages");
+                }
+              }
+
+              Gtk.Box {
+                height-request: 12;
+              }
+
+              Gtk.Button sync_btn {
+                label: _("Sync");
+                halign: center;
+                width-request: 120;
+
+                styles [
+                  "suggested-action",
+                  "pill"
+                ]
+              }
             }
           }
         };
