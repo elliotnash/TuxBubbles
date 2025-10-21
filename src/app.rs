@@ -1,19 +1,21 @@
 use relm4::{
-    actions::{RelmAction, RelmActionGroup},
+    actions::{AccelsPlus, RelmAction, RelmActionGroup},
     adw, gtk, main_application, Component, ComponentController, ComponentParts, ComponentSender,
     Controller, SimpleComponent,
 };
 
 use gtk::prelude::{
-    ApplicationExt, ApplicationWindowExt, GtkWindowExt, OrientableExt, SettingsExt, WidgetExt,
+    ApplicationExt, GtkWindowExt, OrientableExt, SettingsExt, WidgetExt,
 };
 use gtk::{gio, glib};
 
 use crate::config::{APP_ID, PROFILE};
 use crate::modals::about::AboutDialog;
+use crate::modals::shortcuts::ShortcutsDialog;
 
 pub(super) struct App {
     about_dialog: Controller<AboutDialog>,
+    shortcuts_dialog: Controller<ShortcutsDialog>,
 }
 
 #[derive(Debug)]
@@ -52,15 +54,6 @@ impl SimpleComponent for App {
                 glib::Propagation::Stop
             },
 
-            #[wrap(Some)]
-            set_help_overlay: shortcuts = &gtk::Builder::from_resource(
-                    "/org/elliotnash/TuxBubbles/gtk/help-overlay.ui"
-                )
-                .object::<gtk::ShortcutsWindow>("help_overlay")
-                .unwrap() -> gtk::ShortcutsWindow {
-                    set_transient_for: Some(&main_window),
-                    set_application: Some(&main_application()),
-            },
 
             add_css_class?: if PROFILE == "Devel" {
                     Some("devel")
@@ -97,18 +90,26 @@ impl SimpleComponent for App {
             .launch(Some(root.clone()))
             .detach();
 
-        let model = Self { about_dialog };
+        let shortcuts_dialog = ShortcutsDialog::builder()
+            .launch(Some(root.clone()))
+            .detach();
+
+        let model = Self {
+            about_dialog,
+            shortcuts_dialog,
+        };
 
         let widgets = view_output!();
 
         let mut actions = RelmActionGroup::<WindowActionGroup>::new();
 
         let shortcuts_action = {
-            let shortcuts = widgets.shortcuts.clone();
+            let sender = model.shortcuts_dialog.sender().clone();
             RelmAction::<ShortcutsAction>::new_stateless(move |_| {
-                shortcuts.present();
+                sender.send(()).unwrap();
             })
         };
+        main_application().set_accelerators_for_action::<ShortcutsAction>(&["<Control>question"]);
 
         let about_action = {
             let sender = model.about_dialog.sender().clone();

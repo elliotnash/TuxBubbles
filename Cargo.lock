@@ -1066,6 +1066,7 @@ name = "tuxbubbles"
 version = "0.1.0"
 dependencies = [
  "gettext-rs",
+ "libadwaita",
  "relm4",
  "tracing",
  "tracing-subscriber",
