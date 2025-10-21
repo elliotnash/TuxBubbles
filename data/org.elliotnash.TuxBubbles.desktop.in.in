@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=TuxBubbles
+Comment=A native Linux client for BlueBubbles, written in Rust with LibAdwaita and GTK4
+Type=Application
+Exec=tuxbubbles
+Terminal=false
+Categories=Network;InstantMessaging;GNOME;GTK;
+# Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+Keywords=iMessage;BlueBubbles;Messages;OpenBubbles;
+# Translators: Do NOT translate or transliterate this text (this is an icon file name)!
+Icon=@icon@
+StartupNotify=true
