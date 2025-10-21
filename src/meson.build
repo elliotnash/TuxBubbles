@@ -40,6 +40,7 @@ tuxbubbles_deps = [
   dependency('libsecret-1'),
   dependency('libsoup-3.0'),
   dependency('json-glib-1.0'),
+  dependency('gee-0.8')
 ]
 
 ui_resources = gnome.compile_resources('ui-resources',

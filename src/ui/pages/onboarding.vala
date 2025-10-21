@@ -68,11 +68,27 @@ public class TuxBubbles.Onboarding : Adw.Bin {
     Regex urlRegex = /^(https?:\/\/)(([a-zA-Z0-9](?:(?:[a-zA-Z0-9-]*|(?<!-)\.(?![-.]))*[a-zA-Z0-9]+)?))(:(\d+))?$/;
     Regex allowedUrlCharsRegex  = /^[a-zA-Z0-9.\-:\/]*$/;
 
-    private void next_page() {
-        current_step = current_step.get_next();
-        onboarding_stack.transition_type = Gtk.StackTransitionType.SLIDE_LEFT;
-        onboarding_stack.visible_child_name = current_step.get_name();
-        previous_btn_revealer.reveal_child = true;
+    private async void next_page() {
+        print("Querying chats\n");
+        try {
+        var res = yield APIClient.instance.chat_query();
+            if (res.is_success()) {
+                print(res.status.to_string() + "\n");
+                print("Chat query successful, %d chats found\n", res.data.size);
+                foreach (var chat in res.data) {
+                    print("Chat: %s\n", chat.guid);
+                    print("Chat: %s\n", chat.display_name);
+                }
+            } else {
+                print("API Error: %s\n", res.error.message);
+            }
+        } catch (Error e) {
+            print("Error querying chats: %s\n", e.message);
+        }
+        //  current_step = current_step.get_next();
+        //  onboarding_stack.transition_type = Gtk.StackTransitionType.SLIDE_LEFT;
+        //  onboarding_stack.visible_child_name = current_step.get_name();
+        //  previous_btn_revealer.reveal_child = true;
     }
 
     private void previous_page() {

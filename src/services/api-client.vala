@@ -18,38 +18,45 @@ public class TuxBubbles.APIClient : GLib.Object {
         settings = TuxBubbles.Settings.instance;
     }
 
+    public delegate T? DataParser<T>(Json.Node node);
+
     // Generic method to make API calls and parse responses
-    private async APIResponse<T>? make_request<T> (string endpoint, string method = "GET", Json.Node? payload = null) throws Error {
+    private async APIResponse<TRes>? make_request<TRes> (string endpoint, DataParser<TRes> parse_data, string method = "GET", GLib.Object? payload = null, Gee.Map<string, string>? query_params = new Gee.HashMap<string, string?>()) throws Error {
         var server_url = settings.server_url;
         if (server_url == "") {
             throw new IOError.INVALID_ARGUMENT ("Server URL not configured");
         }
 
-        var password = yield settings.retrieve_password ();
+        var password = yield settings.retrieve_password();
         if (password == null) {
             throw new IOError.INVALID_ARGUMENT ("Password not configured");
         }
 
-        // Build URL with password parameter  
-        // TODO: Allow custom query parameters as key value pairs and use them to build the URL
-        var url = "%s%s?password=%s".printf (
-            server_url,
-            endpoint,
-            GLib.Uri.escape_string (password, null, true)
-        );
+        // Add password to query params but don't overwrite if it already exists
+        if (!query_params.has_key("password")) {
+            query_params.set("password", password);
+        }
+
+        var query_string = "";
+        foreach (var entry in query_params) {
+            query_string += "%s=%s&".printf(GLib.Uri.escape_string(entry.key), GLib.Uri.escape_string(entry.value));
+        }
+        query_string = query_string.substring(0, query_string.length - 1);
+
+        var url = "%s%s?%s".printf(server_url, endpoint, query_string);
         
-        var message = new Soup.Message (method, url);
+        var message = new Soup.Message(method, url);
 
         // Set headers
-        message.request_headers.append ("Content-Type", "application/json");
-        message.request_headers.append ("User-Agent", "TuxBubbles/1.0");
+        message.request_headers.append("Content-Type", "application/json");
+        message.request_headers.append("User-Agent", "TuxBubbles/1.0");
 
         // Add payload for POST/PUT requests
         if (payload != null && (method == "POST" || method == "PUT")) {
-            var generator = new Json.Generator ();
-            generator.set_root (payload);
-            var json_string = generator.to_data (null);
-            message.set_request_body_from_bytes ("application/json", new Bytes.take (json_string.data));
+            var generator = new Json.Generator();
+            generator.set_root(Json.gobject_serialize(payload));
+            var json_string = generator.to_data(null);
+            message.set_request_body_from_bytes("application/json", new Bytes.take(json_string.data));
         }
         
         var response_data = yield session.send_and_read_async(message, Priority.DEFAULT, null);
@@ -81,9 +88,9 @@ public class TuxBubbles.APIClient : GLib.Object {
         var error_node = root_object.get_member("error");
 
         // Parse the data field based on type T
-        T? data = null;
+        TRes? data = null;
         if (data_node != null && !data_node.is_null()) {
-            data = parse_data<T> (data_node);
+            data = parse_data<TRes> (data_node);
         }
 
         APIError? error = null;
@@ -91,7 +98,7 @@ public class TuxBubbles.APIClient : GLib.Object {
             error = parse_error (error_node);
         }
 
-        return new APIResponse<T> (status, message_text, data, error);
+        return new APIResponse<TRes> (status, message_text, data, error);
     }
 
     private APIError? parse_error (Json.Node error_node) {
@@ -105,13 +112,30 @@ public class TuxBubbles.APIClient : GLib.Object {
     }
 
     // Type-specific data parsing
-    private T? parse_data<T> (Json.Node data_node) {
-        // TODO: Add parsers for other primatives
+    private T? parse_object<T> (Json.Node data_node) {
         if (typeof (T) == typeof(string)) {
             return (T) data_node.get_string();
+        //  } else if (typeof (T) == typeof(int)) {
+        //      return (T) data_node.get_int();
+        //  } else if (typeof (T) == typeof(double)) {
+        //      return (T) (double) data_node.get_double();
+        //  } else if (typeof (T) == typeof(bool)) {
+        //      return (T) (bool) data_node.get_boolean();
         } else {
             return Json.gobject_deserialize(typeof (T), data_node);
         }
+    }
+
+    private Gee.List<T>? parse_data_array<T> (Json.Node data_node) {
+        var array = new Gee.ArrayList<T>();
+        var array_node = data_node.get_array();
+        if (array_node == null) {
+            return null;
+        }
+        foreach (var node in array_node.get_elements()) {
+            array.add(parse_object<T>(node));
+        }
+        return array;
     }
 
     // Helper method to check if server is reachable
@@ -127,6 +151,24 @@ public class TuxBubbles.APIClient : GLib.Object {
 
     // Ping endpoint
     public async APIResponse<string>? ping() throws Error {
-        return yield make_request<string>("/api/v1/ping");
+        return yield make_request<string>("/api/v1/ping", (node) => parse_object<string>(node));
+    }
+
+    public async APIResponse<Gee.List<Chat>>? chat_query() throws Error {
+        return yield make_request<Gee.List<Chat>>("/api/v1/chat/query", (node) => parse_data_array<Chat>(node), "POST", new ChatQueryRequest());
+    }
+}
+
+class TuxBubbles.ChatQueryRequest : GLib.Object {
+    public int? limit { get; set; }
+    public int? offset { get; set; }
+    public Gee.List<string>? with { get; set; }
+    public string? sort { get; set; }
+
+    public ChatQueryRequest(int? limit = null, int? offset = null, Gee.List<string>? with = null, string? sort = null) {
+        this.limit = limit;
+        this.offset = offset;
+        this.with = with;
+        this.sort = sort;
     }
 }
