@@ -1,43 +1,38 @@
-use gtk::prelude::GtkWindowExt;
-use relm4::{adw, gtk, ComponentParts, ComponentSender, SimpleComponent};
+use relm4::{adw::{self, prelude::AdwDialogExt}, gtk, ComponentParts, ComponentSender, SimpleComponent};
 
 use crate::config::{APP_ID, VERSION};
 
-pub struct AboutDialog {}
+pub struct AboutDialog {
+    parent: Option<adw::ApplicationWindow>,
+}
 
 impl SimpleComponent for AboutDialog {
-    type Init = ();
-    type Widgets = adw::AboutWindow;
+    type Init = Option<adw::ApplicationWindow>;
+    type Widgets = adw::AboutDialog;
     type Input = ();
     type Output = ();
-    type Root = adw::AboutWindow;
+    type Root = adw::AboutDialog;
 
     fn init_root() -> Self::Root {
-        adw::AboutWindow::builder()
+        adw::AboutDialog::builder()
+            .application_name("TuxBubbles")
             .application_icon(APP_ID)
-            // Insert your license of choice here
-            // .license_type(gtk::License::MitX11)
-            // Insert your website here
-            // .website("https://gitlab.gnome.org/bilelmoussaoui/tuxbubbles/")
-            // Insert your Issues page
-            // .issue_url("https://gitlab.gnome.org/World/Rust/tuxbubbles/-/issues")
-            // Insert your application name here
-            .application_name("Relm4-template")
+            .website("https://github.com/elliotnash/TuxBubbles")
+            .issue_url("https://github.com/elliotnash/TuxBubbles/issues/new")
             .version(VERSION)
             .translator_credits("translator-credits")
-            .copyright("© 2023 Elliot Nash")
+            .copyright("© 2025 Elliot Nash")
             .developers(vec!["Elliot Nash"])
-            .designers(vec!["Elliot Nash"])
-            .hide_on_close(true)
+            .license_type(gtk::License::Gpl30)
             .build()
     }
 
     fn init(
-        _: Self::Init,
+        parent: Self::Init,
         root: Self::Root,
         _sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        let model = Self {};
+        let model = Self { parent };
 
         let widgets = root.clone();
 
@@ -45,6 +40,6 @@ impl SimpleComponent for AboutDialog {
     }
 
     fn update_view(&self, dialog: &mut Self::Widgets, _sender: ComponentSender<Self>) {
-        dialog.present();
+        dialog.present(self.parent.as_ref());
     }
 }

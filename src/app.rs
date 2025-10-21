@@ -94,8 +94,7 @@ impl SimpleComponent for App {
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
         let about_dialog = AboutDialog::builder()
-            .transient_for(&root)
-            .launch(())
+            .launch(Some(root.clone()))
             .detach();
 
         let model = Self { about_dialog };
