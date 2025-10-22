@@ -1,7 +1,5 @@
 use relm4::{
-    actions::{AccelsPlus, RelmAction, RelmActionGroup},
-    adw, gtk, main_application, Component, ComponentController, ComponentParts, ComponentSender,
-    Controller, SimpleComponent,
+    actions::{AccelsPlus, RelmAction, RelmActionGroup}, adw, gtk, main_application, Component, ComponentController, ComponentParts, ComponentSender, Controller, RelmIterChildrenExt, SimpleComponent
 };
 
 use gtk::prelude::{
@@ -9,13 +7,14 @@ use gtk::prelude::{
 };
 use gtk::{gio, glib};
 
-use crate::config::{APP_ID, PROFILE};
-use crate::modals::about::AboutDialog;
-use crate::modals::shortcuts::ShortcutsDialog;
+use crate::{config::{APP_ID, PROFILE}, ui::pages::onboarding::OnboardingPage};
+use crate::ui::dialogs::about::AboutDialog;
+use crate::ui::dialogs::shortcuts::ShortcutsDialog;
 
 pub(super) struct App {
     about_dialog: Controller<AboutDialog>,
     shortcuts_dialog: Controller<ShortcutsDialog>,
+    // onboarding_page: Controller<OnboardingPage>
 }
 
 #[derive(Debug)]
@@ -24,9 +23,9 @@ pub(super) enum AppMsg {
 }
 
 relm4::new_action_group!(pub(super) WindowActionGroup, "win");
-relm4::new_stateless_action!(PreferencesAction, WindowActionGroup, "preferences");
+relm4::new_stateless_action!(pub(super) PreferencesAction, WindowActionGroup, "preferences");
 relm4::new_stateless_action!(pub(super) ShortcutsAction, WindowActionGroup, "show-help-overlay");
-relm4::new_stateless_action!(AboutAction, WindowActionGroup, "about");
+relm4::new_stateless_action!(pub(super) AboutAction, WindowActionGroup, "about");
 
 #[relm4::component(pub)]
 impl SimpleComponent for App {
@@ -46,6 +45,7 @@ impl SimpleComponent for App {
     }
 
     view! {
+        #[root]
         main_window = adw::ApplicationWindow::new(&main_application()) {
             set_visible: true,
 
@@ -61,23 +61,14 @@ impl SimpleComponent for App {
                     None
                 },
 
-            gtk::Box {
-                set_orientation: gtk::Orientation::Vertical,
-
-                adw::HeaderBar {
-                    pack_end = &gtk::MenuButton {
-                        set_icon_name: "open-menu-symbolic",
-                        set_menu_model: Some(&primary_menu),
-                    }
-                },
-
-                gtk::Label {
-                    set_label: "Hello world!",
-                    add_css_class: "title-header",
-                    set_vexpand: true,
-                }
+            // stack {}
+            #[name = "toast_overlay"]
+            adw::ToastOverlay {
+                set_child: Some(&main_stack)
             }
-
+        },
+        main_stack = &gtk::Stack {
+            add_titled: (onboarding_page.widget(), Some("onboarding"), "Onboarding"),
         }
     }
 
@@ -94,7 +85,10 @@ impl SimpleComponent for App {
             .launch(Some(root.clone()))
             .detach();
 
+        let onboarding_page = OnboardingPage::builder().launch(());
+
         let model = Self {
+            // onboarding_page,
             about_dialog,
             shortcuts_dialog,
         };
