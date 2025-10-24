@@ -1,5 +1,6 @@
-use std::fmt;
+use std::{fmt, sync::LazyLock};
 
+use fancy_regex::Regex;
 use gettextrs::gettext;
 use libadwaita::prelude::{EntryRowExt, PreferencesRowExt};
 use relm4::{
@@ -7,18 +8,21 @@ use relm4::{
     actions::ActionName,
     adw,
     gtk::{
-        self, Adjustment,
+        self,
         prelude::{
-            ActionableExt, BoxExt, ButtonExt, ListBoxRowExt, OrientableExt, RangeExt, ScaleExt,
-            WidgetExt,
+            ActionableExt, BoxExt, ButtonExt, EditableExt, ListBoxRowExt, OrientableExt, RangeExt,
+            ScaleExt, WidgetExt,
         },
     },
 };
 
-use crate::{
-    app::{AboutAction, PreferencesAction, ShortcutsAction},
-    config::APP_ID,
-};
+use crate::{app::AboutAction, config::APP_ID};
+
+static ALLOWED_URL_CHARS_REGEX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^[a-zA-Z0-9.\-:\/]*$").unwrap());
+static URL_REGEX: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^(https?:\/\/)(([a-zA-Z0-9](?:(?:[a-zA-Z0-9-]*|(?<!-)\.(?![-.]))*[a-zA-Z0-9]+)?))(:(\d+))?$").unwrap()
+});
 
 #[derive(Debug, PartialEq)]
 enum OnboardingStep {
@@ -52,14 +56,22 @@ impl OnboardingStep {
 pub enum OnboardingPageMsg {
     NextPage,
     PreviousPage,
+    ToggleSyncAll,
+    UrlChanged(String),
+    UrlEntered,
+    PasswordChanged(String),
     Connect,
     Sync,
-    ToggleSyncAll,
 }
 
 pub struct OnboardingPage {
     step: OnboardingStep,
     transition: gtk::StackTransitionType,
+    url: String,
+    url_error: Option<String>,
+    password: String,
+    password_error: Option<String>,
+    connecting: bool,
     sync_all: bool,
 }
 
@@ -119,8 +131,7 @@ impl SimpleComponent for OnboardingPage {
                 gtk::Button {
                     set_label: &gettext("Continue"),
                     set_halign: gtk::Align::Center,
-                    add_css_class: "suggested-action",
-                    add_css_class: "pill",
+                    set_css_classes: &["suggested-action", "pill"],
                     connect_clicked => OnboardingPageMsg::NextPage,
                 }
             }
@@ -137,24 +148,59 @@ impl SimpleComponent for OnboardingPage {
                 gtk::ListBox {
                     add_css_class: "boxed-list",
 
+                    #[name = "url_entry"]
                     adw::EntryRow {
                         set_input_purpose: gtk::InputPurpose::Url,
-                        set_title: &gettext("BlueBubbles server URL")
+                        set_title: &gettext("BlueBubbles server URL"),
+                        add_controller: url_focus_controller,
+                        #[watch]
+                        set_tooltip_text: model.url_error.as_deref(),
+                        #[watch]
+                        set_css_classes: if model.url_error.is_some() { &["error"] } else { &[] },
+                        connect_changed[sender] => move |entry| {
+                            let text = entry.text().to_string();
+                            sender.input(OnboardingPageMsg::UrlChanged(text))
+                        },
+                        connect_entry_activated: {
+                            let password_entry = password_entry.clone();
+                            move |_| {
+                                password_entry.grab_focus();
+                            }
+                        },
                     },
 
+                    #[name = "password_entry"]
                     adw::PasswordEntryRow {
                         set_input_purpose: gtk::InputPurpose::Password,
-                        set_title: &gettext("BlueBubbles server password")
+                        set_title: &gettext("BlueBubbles server password"),
+                        #[watch]
+                        set_tooltip_text: model.password_error.as_deref(),
+                        #[watch]
+                        set_css_classes: if model.password_error.is_some() { &["error"] } else { &[] },
+                        connect_changed[sender] => move |entry| {
+                            let text = entry.text().to_string();
+                            sender.input(OnboardingPageMsg::PasswordChanged(text))
+                        },
+                        connect_entry_activated => OnboardingPageMsg::Connect,
                     }
                 },
 
                 gtk::Button {
-                    set_label: &gettext("Connect"),
                     set_halign: gtk::Align::Center,
                     set_width_request: 120,
-                    add_css_class: "suggested-action",
-                    add_css_class: "pill",
-                    connect_clicked => OnboardingPageMsg::NextPage,
+                    set_css_classes: &["suggested-action", "pill"],
+                    connect_clicked => OnboardingPageMsg::Connect,
+
+                    #[watch]
+                    set_sensitive: !model.connecting,
+                    #[wrap(Some)]
+                    set_child = if model.connecting {
+                        adw::Spinner {}
+                    } else {
+                        gtk::Label {
+                            set_label: &gettext("Connect"),
+                        }
+                    }
                 }
             }
         },
@@ -214,32 +260,47 @@ impl SimpleComponent for OnboardingPage {
                     set_label: &gettext("Sync"),
                     set_halign: gtk::Align::Center,
                     set_width_request: 120,
-                    add_css_class: "suggested-action",
-                    add_css_class: "pill",
+                    set_css_classes: &["suggested-action", "pill"],
                     connect_clicked => OnboardingPageMsg::NextPage,
                 }
             }
         },
+        spinner = &adw::Spinner {}
     }
 
-    fn init(_: Self::Init, root: Self::Root, __: ComponentSender<Self>) -> ComponentParts<Self> {
+    fn init(
+        _: Self::Init,
+        root: Self::Root,
+        sender: ComponentSender<Self>,
+    ) -> ComponentParts<Self> {
         let history_scale_adjustment = gtk::Adjustment::builder()
             .upper(100.0)
             .lower(0.0)
             .step_increment(0.1)
             .build();
 
+        let url_focus_controller = gtk::EventControllerFocus::new();
+        let focus_sender = sender.clone();
+        url_focus_controller.connect_leave(move |_| {
+            focus_sender.input(OnboardingPageMsg::UrlEntered);
+        });
+
         let model = Self {
             step: OnboardingStep::Welcome,
             transition: gtk::StackTransitionType::SlideLeft,
             sync_all: false,
+            url_error: None,
+            password_error: None,
+            url: String::new(),
+            password: String::new(),
+            connecting: false,
         };
         let widgets = view_output!();
+
         ComponentParts { model, widgets }
     }
 
-    fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>) {
-        // println!("Sent a message");
+    fn update(&mut self, message: Self::Input, _sender: ComponentSender<Self>) {
         match message {
             OnboardingPageMsg::NextPage => {
                 self.step = self.step.next();
@@ -250,6 +311,28 @@ impl SimpleComponent for OnboardingPage {
                 self.transition = gtk::StackTransitionType::SlideRight;
             }
             OnboardingPageMsg::ToggleSyncAll => self.sync_all = !self.sync_all,
+            OnboardingPageMsg::UrlChanged(url) => {
+                self.url = url;
+                if ALLOWED_URL_CHARS_REGEX.is_match(&self.url).unwrap_or(false) {
+                    self.url_error = None;
+                } else {
+                    self.url_error = Some(gettext("Invalid URL"));
+                }
+            }
+            OnboardingPageMsg::UrlEntered => {
+                println!("UrlEntered called with url: {}", self.url);
+                if URL_REGEX.is_match(&self.url).unwrap_or(false) {
+                    self.url_error = None;
+                } else {
+                    self.url_error = Some(gettext("Invalid URL"));
+                }
+            }
+            OnboardingPageMsg::PasswordChanged(password) => {
+                self.password = password;
+            }
+            OnboardingPageMsg::Connect => {
+                self.connecting = true;
+            }
             _ => (),
         }
     }
