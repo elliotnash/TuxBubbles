@@ -1,4 +1,7 @@
-use relm4::{adw::{self, prelude::AdwDialogExt}, ComponentParts, ComponentSender, SimpleComponent};
+use relm4::{
+    ComponentParts, ComponentSender, SimpleComponent,
+    adw::{self, prelude::AdwDialogExt},
+};
 
 pub struct ShortcutsDialog {
     parent: Option<adw::ApplicationWindow>,
@@ -27,17 +30,11 @@ impl SimpleComponent for ShortcutsDialog {
         let general_section = adw::ShortcutsSection::new(Some("General"));
 
         // Add "Show Shortcuts" shortcut
-        let show_shortcuts_item = adw::ShortcutsItem::new(
-            "Show Shortcuts",
-            "<Primary>question",
-        );
+        let show_shortcuts_item = adw::ShortcutsItem::new("Show Shortcuts", "<Primary>question");
         general_section.add(show_shortcuts_item);
 
         // Add "Quit" shortcut
-        let quit_item = adw::ShortcutsItem::new(
-            "Quit",
-            "<Primary>q",
-        );
+        let quit_item = adw::ShortcutsItem::new("Quit", "<Primary>q");
         general_section.add(quit_item);
 
         // Add the section to the dialog

@@ -1,4 +1,8 @@
-use relm4::{adw::{self, prelude::AdwDialogExt}, gtk, ComponentParts, ComponentSender, SimpleComponent};
+use relm4::{
+    ComponentParts, ComponentSender, SimpleComponent,
+    adw::{self, prelude::AdwDialogExt},
+    gtk,
+};
 
 use crate::config::{APP_ID, VERSION};
 

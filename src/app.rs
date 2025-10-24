@@ -1,20 +1,24 @@
 use relm4::{
-    actions::{AccelsPlus, RelmAction, RelmActionGroup}, adw, gtk, main_application, Component, ComponentController, ComponentParts, ComponentSender, Controller, RelmIterChildrenExt, SimpleComponent
+    Component, ComponentController, ComponentParts, ComponentSender, Controller,
+    RelmIterChildrenExt, SimpleComponent,
+    actions::{AccelsPlus, RelmAction, RelmActionGroup},
+    adw, gtk, main_application,
 };
 
-use gtk::prelude::{
-    ApplicationExt, GtkWindowExt, OrientableExt, SettingsExt, WidgetExt,
-};
+use gtk::prelude::{ApplicationExt, GtkWindowExt, OrientableExt, SettingsExt, WidgetExt};
 use gtk::{gio, glib};
 
-use crate::{config::{APP_ID, PROFILE}, ui::pages::onboarding::OnboardingPage};
 use crate::ui::dialogs::about::AboutDialog;
 use crate::ui::dialogs::shortcuts::ShortcutsDialog;
+use crate::{
+    config::{APP_ID, PROFILE},
+    ui::pages::onboarding::OnboardingPage,
+};
 
 pub(super) struct App {
     about_dialog: Controller<AboutDialog>,
     shortcuts_dialog: Controller<ShortcutsDialog>,
-    onboarding_page: Controller<OnboardingPage>
+    onboarding_page: Controller<OnboardingPage>,
 }
 
 #[derive(Debug)]
@@ -77,17 +81,13 @@ impl SimpleComponent for App {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        let about_dialog = AboutDialog::builder()
-            .launch(Some(root.clone()))
-            .detach();
+        let about_dialog = AboutDialog::builder().launch(Some(root.clone())).detach();
 
         let shortcuts_dialog = ShortcutsDialog::builder()
             .launch(Some(root.clone()))
             .detach();
 
-        let onboarding_page = OnboardingPage::builder()
-            .launch(())
-            .detach();
+        let onboarding_page = OnboardingPage::builder().launch(()).detach();
 
         let model = Self {
             onboarding_page,

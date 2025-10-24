@@ -2,15 +2,26 @@ use std::fmt;
 
 use gettextrs::gettext;
 use libadwaita::prelude::{EntryRowExt, PreferencesRowExt};
-use relm4::{actions::{ActionName}, adw, gtk::{self, prelude::{ActionableExt, BoxExt, ButtonExt, OrientableExt, WidgetExt}}, ComponentParts, ComponentSender, SimpleComponent};
+use relm4::{
+    ComponentParts, ComponentSender, SimpleComponent,
+    actions::ActionName,
+    adw,
+    gtk::{
+        self,
+        prelude::{ActionableExt, BoxExt, ButtonExt, OrientableExt, WidgetExt},
+    },
+};
 
-use crate::{app::{AboutAction, PreferencesAction, ShortcutsAction}, config::APP_ID};
+use crate::{
+    app::{AboutAction, PreferencesAction, ShortcutsAction},
+    config::APP_ID,
+};
 
 #[derive(Debug, PartialEq)]
 enum OnboardingStep {
     Welcome,
     Connection,
-    Sync
+    Sync,
 }
 
 impl fmt::Display for OnboardingStep {
@@ -23,13 +34,13 @@ impl OnboardingStep {
     fn next(&self) -> Self {
         match self {
             Self::Welcome => Self::Connection,
-            _ => Self::Sync
+            _ => Self::Sync,
         }
     }
     fn previous(&self) -> Self {
         match self {
             Self::Sync => Self::Connection,
-            _ => Self::Welcome
+            _ => Self::Welcome,
         }
     }
 }
@@ -42,7 +53,7 @@ pub enum OnboardingPageMsg {
 
 pub struct OnboardingPage {
     step: OnboardingStep,
-    transition: gtk::StackTransitionType
+    transition: gtk::StackTransitionType,
 }
 
 #[relm4::component(pub)]
@@ -145,14 +156,10 @@ impl SimpleComponent for OnboardingPage {
         }
     }
 
-    fn init(
-        _: Self::Init,
-        root: Self::Root,
-        __: ComponentSender<Self>,
-    ) -> ComponentParts<Self> {
+    fn init(_: Self::Init, root: Self::Root, __: ComponentSender<Self>) -> ComponentParts<Self> {
         let model = Self {
             step: OnboardingStep::Welcome,
-            transition: gtk::StackTransitionType::SlideLeft
+            transition: gtk::StackTransitionType::SlideLeft,
         };
         let widgets = view_output!();
         ComponentParts { model, widgets }
