@@ -1,17 +1,40 @@
+use std::fmt;
+
 use gettextrs::gettext;
 use libadwaita::prelude::{EntryRowExt, PreferencesRowExt};
 use relm4::{actions::{ActionName}, adw, gtk::{self, prelude::{ActionableExt, BoxExt, ButtonExt, OrientableExt, WidgetExt}}, ComponentParts, ComponentSender, SimpleComponent};
 
 use crate::{app::{AboutAction, PreferencesAction, ShortcutsAction}, config::APP_ID};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum OnboardingStep {
     Welcome,
     Connection,
     Sync
 }
 
-#[derive(Debug)]
+impl fmt::Display for OnboardingStep {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl OnboardingStep {
+    fn next(&self) -> Self {
+        match self {
+            Self::Welcome => Self::Connection,
+            _ => Self::Sync
+        }
+    }
+    fn previous(&self) -> Self {
+        match self {
+            Self::Sync => Self::Connection,
+            _ => Self::Welcome
+        }
+    }
+}
+
+#[derive(Debug, PartialEq)]
 pub enum OnboardingPageMsg {
     Next,
     Previous,
@@ -32,6 +55,18 @@ impl SimpleComponent for OnboardingPage {
         #[root]
         adw::ToolbarView {
             add_top_bar = &adw::HeaderBar {
+                pack_start = &gtk::Revealer {
+                    #[watch]
+                    set_reveal_child: model.step != OnboardingStep::Welcome,
+                    set_transition_type: gtk::RevealerTransitionType::Crossfade,
+
+                    gtk::Button {
+                      set_tooltip_text: Some(&gettext("Previous Page")),
+                      set_icon_name: "go-previous-symbolic",
+                      connect_clicked => OnboardingPageMsg::Previous,
+                    }
+                },
+
                 pack_end = &gtk::Button {
                     set_icon_name: "help-about-symbolic",
                     set_action_name: Some(&AboutAction::action_name()),
@@ -43,18 +78,15 @@ impl SimpleComponent for OnboardingPage {
 
         },
         stack = &gtk::Stack {
-            add_titled: (&welcome, Some("welcome"), &gettext("Welcome to TuxBubbles")),
-            add_titled: (&connection, Some("connection"), &gettext("Connect to your BlueBubbles instance")),
+            add_titled: (&welcome, Some(&OnboardingStep::Welcome.to_string()), &gettext("Welcome to TuxBubbles")),
+            add_titled: (&connection, Some(&OnboardingStep::Connection.to_string()), &gettext("Connect to your BlueBubbles instance")),
+            add_titled: (&sync, Some(&OnboardingStep::Sync.to_string()), &gettext("Sync your message")),
 
             #[watch]
             set_transition_type: model.transition,
 
             #[watch]
-            set_visible_child_name: match model.step {
-                OnboardingStep::Welcome => "welcome",
-                OnboardingStep::Connection => "connection",
-                OnboardingStep::Sync => "sync",
-            }
+            set_visible_child_name: &model.step.to_string()
         },
         welcome = &adw::StatusPage {
             set_icon_name: Some(APP_ID),
@@ -104,8 +136,12 @@ impl SimpleComponent for OnboardingPage {
                     set_width_request: 120,
                     add_css_class: "suggested-action",
                     add_css_class: "pill",
+                    connect_clicked => OnboardingPageMsg::Next,
                 }
             }
+        },
+        sync = &adw::StatusPage {
+            set_title: &gettext("Sync your messages")
         }
     }
 
@@ -126,14 +162,13 @@ impl SimpleComponent for OnboardingPage {
         // println!("Sent a message");
         match message {
             OnboardingPageMsg::Next => {
-                self.step = OnboardingStep::Connection;
+                self.step = self.step.next();
                 self.transition = gtk::StackTransitionType::SlideLeft;
             }
             OnboardingPageMsg::Previous => {
-                self.step = OnboardingStep::Welcome;
+                self.step = self.step.previous();
                 self.transition = gtk::StackTransitionType::SlideRight;
             }
         }
-        println!("{:?}", &self.step);
     }
 }
