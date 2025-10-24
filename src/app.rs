@@ -14,7 +14,7 @@ use crate::ui::dialogs::shortcuts::ShortcutsDialog;
 pub(super) struct App {
     about_dialog: Controller<AboutDialog>,
     shortcuts_dialog: Controller<ShortcutsDialog>,
-    // onboarding_page: Controller<OnboardingPage>
+    onboarding_page: Controller<OnboardingPage>
 }
 
 #[derive(Debug)]
@@ -68,7 +68,7 @@ impl SimpleComponent for App {
             }
         },
         main_stack = &gtk::Stack {
-            add_titled: (onboarding_page.widget(), Some("onboarding"), "Onboarding"),
+            add_titled: (model.onboarding_page.widget(), Some("onboarding"), "Onboarding"),
         }
     }
 
@@ -85,10 +85,12 @@ impl SimpleComponent for App {
             .launch(Some(root.clone()))
             .detach();
 
-        let onboarding_page = OnboardingPage::builder().launch(());
+        let onboarding_page = OnboardingPage::builder()
+            .launch(())
+            .detach();
 
         let model = Self {
-            // onboarding_page,
+            onboarding_page,
             about_dialog,
             shortcuts_dialog,
         };

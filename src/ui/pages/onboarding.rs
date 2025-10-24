@@ -1,13 +1,30 @@
 use gettextrs::gettext;
+use libadwaita::prelude::{EntryRowExt, PreferencesRowExt};
 use relm4::{actions::{ActionName}, adw, gtk::{self, prelude::{ActionableExt, BoxExt, ButtonExt, OrientableExt, WidgetExt}}, ComponentParts, ComponentSender, SimpleComponent};
 
 use crate::{app::{AboutAction, PreferencesAction, ShortcutsAction}, config::APP_ID};
 
-pub struct OnboardingPage {}
+#[derive(Debug)]
+enum OnboardingStep {
+    Welcome,
+    Connection,
+    Sync
+}
+
+#[derive(Debug)]
+pub enum OnboardingPageMsg {
+    Next,
+    Previous,
+}
+
+pub struct OnboardingPage {
+    step: OnboardingStep,
+    transition: gtk::StackTransitionType
+}
 
 #[relm4::component(pub)]
 impl SimpleComponent for OnboardingPage {
-    type Input = ();
+    type Input = OnboardingPageMsg;
     type Output = ();
     type Init = ();
 
@@ -27,6 +44,17 @@ impl SimpleComponent for OnboardingPage {
         },
         stack = &gtk::Stack {
             add_titled: (&welcome, Some("welcome"), &gettext("Welcome to TuxBubbles")),
+            add_titled: (&connection, Some("connection"), &gettext("Connect to your BlueBubbles instance")),
+
+            #[watch]
+            set_transition_type: model.transition,
+
+            #[watch]
+            set_visible_child_name: match model.step {
+                OnboardingStep::Welcome => "welcome",
+                OnboardingStep::Connection => "connection",
+                OnboardingStep::Sync => "sync",
+            }
         },
         welcome = &adw::StatusPage {
             set_icon_name: Some(APP_ID),
@@ -43,6 +71,39 @@ impl SimpleComponent for OnboardingPage {
                     set_halign: gtk::Align::Center,
                     add_css_class: "suggested-action",
                     add_css_class: "pill",
+                    connect_clicked => OnboardingPageMsg::Next,
+                }
+            }
+        },
+        connection = &adw::StatusPage {
+            set_title: &gettext("Connect to your BlueBubbles instance"),
+
+            gtk::Box {
+                set_orientation: gtk::Orientation::Vertical,
+                set_hexpand: false,
+                set_halign: gtk::Align::Center,
+                set_spacing: 36,
+
+                gtk::ListBox {
+                    add_css_class: "boxed-list",
+
+                    adw::EntryRow {
+                        set_input_purpose: gtk::InputPurpose::Url,
+                        set_title: &gettext("BlueBubbles server URL")
+                    },
+
+                    adw::PasswordEntryRow {
+                        set_input_purpose: gtk::InputPurpose::Password,
+                        set_title: &gettext("BlueBubbles server password")
+                    }
+                },
+
+                gtk::Button {
+                    set_label: &gettext("Connect"),
+                    set_halign: gtk::Align::Center,
+                    set_width_request: 120,
+                    add_css_class: "suggested-action",
+                    add_css_class: "pill",
                 }
             }
         }
@@ -53,14 +114,26 @@ impl SimpleComponent for OnboardingPage {
         root: Self::Root,
         __: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        let model = OnboardingPage {};
+        let model = Self {
+            step: OnboardingStep::Welcome,
+            transition: gtk::StackTransitionType::SlideLeft
+        };
         let widgets = view_output!();
         ComponentParts { model, widgets }
     }
 
     fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>) {
-        // match message {
-
-        // }
+        // println!("Sent a message");
+        match message {
+            OnboardingPageMsg::Next => {
+                self.step = OnboardingStep::Connection;
+                self.transition = gtk::StackTransitionType::SlideLeft;
+            }
+            OnboardingPageMsg::Previous => {
+                self.step = OnboardingStep::Welcome;
+                self.transition = gtk::StackTransitionType::SlideRight;
+            }
+        }
+        println!("{:?}", &self.step);
     }
 }
