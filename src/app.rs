@@ -1,11 +1,12 @@
 use relm4::{
-    Component, ComponentController, ComponentParts, ComponentSender, Controller,
-    RelmIterChildrenExt, SimpleComponent,
+    Component, ComponentController, ComponentParts, ComponentSender, Controller, MessageBroker,
+    SimpleComponent,
+    abstractions::Toaster,
     actions::{AccelsPlus, RelmAction, RelmActionGroup},
     adw, gtk, main_application,
 };
 
-use gtk::prelude::{ApplicationExt, GtkWindowExt, OrientableExt, SettingsExt, WidgetExt};
+use gtk::prelude::{ApplicationExt, GtkWindowExt, SettingsExt, WidgetExt};
 use gtk::{gio, glib};
 
 use crate::ui::dialogs::about::AboutDialog;
@@ -15,15 +16,19 @@ use crate::{
     ui::pages::onboarding::OnboardingPage,
 };
 
+pub static APP_BROKER: MessageBroker<AppMsg> = MessageBroker::new();
+
 pub(super) struct App {
     about_dialog: Controller<AboutDialog>,
     shortcuts_dialog: Controller<ShortcutsDialog>,
     onboarding_page: Controller<OnboardingPage>,
+    toaster: Toaster,
 }
 
 #[derive(Debug)]
 pub(super) enum AppMsg {
     Quit,
+    ShowToast(String),
 }
 
 relm4::new_action_group!(pub(super) WindowActionGroup, "win");
@@ -65,9 +70,8 @@ impl SimpleComponent for App {
                     None
                 },
 
-            // stack {}
-            #[name = "toast_overlay"]
-            adw::ToastOverlay {
+            #[local_ref]
+            toast_overlay -> adw::ToastOverlay {
                 set_child: Some(&main_stack)
             }
         },
@@ -93,7 +97,10 @@ impl SimpleComponent for App {
             onboarding_page,
             about_dialog,
             shortcuts_dialog,
+            toaster: Toaster::default(),
         };
+
+        let toast_overlay = model.toaster.overlay_widget();
 
         let widgets = view_output!();
 
@@ -126,6 +133,10 @@ impl SimpleComponent for App {
     fn update(&mut self, message: Self::Input, _sender: ComponentSender<Self>) {
         match message {
             AppMsg::Quit => main_application().quit(),
+            AppMsg::ShowToast(message) => {
+                let toast = adw::Toast::builder().title(message).build();
+                self.toaster.add_toast(toast);
+            }
         }
     }
 

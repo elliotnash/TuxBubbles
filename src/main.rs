@@ -13,7 +13,7 @@ use relm4::{
     gtk, main_application, set_global_css,
 };
 
-use app::App;
+use app::{APP_BROKER, App};
 
 relm4::new_action_group!(AppActionGroup, "app");
 relm4::new_stateless_action!(QuitAction, AppActionGroup, "quit");
@@ -55,7 +55,7 @@ fn main() {
 
     app.set_accelerators_for_action::<QuitAction>(&["<Control>q"]);
 
-    let app = RelmApp::from_app(app);
+    let app = RelmApp::from_app(app).with_broker(&APP_BROKER);
 
     let data = res
         .lookup_data(

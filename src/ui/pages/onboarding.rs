@@ -16,7 +16,10 @@ use relm4::{
     },
 };
 
-use crate::{app::AboutAction, config::APP_ID};
+use crate::{
+    app::{APP_BROKER, AboutAction, AppMsg},
+    config::APP_ID,
+};
 
 static ALLOWED_URL_CHARS_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"^[a-zA-Z0-9.\-:\/]*$").unwrap());
@@ -300,7 +303,7 @@ impl SimpleComponent for OnboardingPage {
         ComponentParts { model, widgets }
     }
 
-    fn update(&mut self, message: Self::Input, _sender: ComponentSender<Self>) {
+    fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>) {
         match message {
             OnboardingPageMsg::NextPage => {
                 self.step = self.step.next();
@@ -329,9 +332,26 @@ impl SimpleComponent for OnboardingPage {
             }
             OnboardingPageMsg::PasswordChanged(password) => {
                 self.password = password;
+                self.password_error = None;
             }
             OnboardingPageMsg::Connect => {
-                self.connecting = true;
+                if let Some(url_error) = self.url_error.clone() {
+                    APP_BROKER.send(AppMsg::ShowToast(url_error));
+                } else {
+                    self.connecting = true;
+
+                    // try to connect to the server
+
+                    // Simulate an invalid password
+                    if true {
+                        self.password_error = Some(gettext("Invalid credentials"));
+                        APP_BROKER.send(AppMsg::ShowToast(gettext("Invalid credentials")));
+                    }
+
+                    // sender.input(OnboardingPageMsg::NextPage);
+
+                    self.connecting = false;
+                }
             }
             _ => (),
         }
