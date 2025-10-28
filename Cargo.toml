@@ -5,10 +5,15 @@ authors = ["Elliot Nash <elliotnash@gmail.com>"]
 edition = "2024"
 publish = false
 
+[workspace]
+members = ["api"]
+
 [profile.release]
 lto = true
 
 [dependencies]
+bluebubbles-api = { path = "./api" }
+
 gettext-rs = { version = "0.7", features = ["gettext-system"] }
 relm4 = { version = "0.10.0", features = ["libadwaita", "gnome_48"] }
 libadwaita = { version = "0.8.0", features = ["v1_8"] }
@@ -28,3 +33,4 @@ tokio = { version = "1.48", features = ["full"] }
 
 oo7 = "0.5.0"
 fancy-regex = "0.16.2"
+anyhow = "1.0"

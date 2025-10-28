@@ -1,6 +1,7 @@
 #[rustfmt::skip]
 mod config;
 mod app;
+mod services;
 mod ui;
 
 use config::{APP_ID, GETTEXT_PACKAGE, LOCALEDIR, RESOURCES_FILE};
