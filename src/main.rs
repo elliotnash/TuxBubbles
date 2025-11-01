@@ -1,6 +1,5 @@
-#[rustfmt::skip]
-mod config;
 mod app;
+mod config;
 mod services;
 mod ui;
 

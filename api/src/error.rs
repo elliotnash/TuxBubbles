@@ -43,6 +43,10 @@ pub enum Error {
     #[error("HTTP request failed: {0}")]
     HTTPError(#[from] reqwest::Error),
 
+    /// JSON deserialization failed
+    #[error("JSON deserialization failed: {0}")]
+    DeserializationError(#[from] serde_path_to_error::Error<serde_json::Error>),
+
     /// API returned error without data
     #[error("API error ({status}): {message}")]
     ApiError { status: StatusCode, message: String },

@@ -38,15 +38,18 @@ impl ClientInner {
         let response = request.send().await.map_err(|e| Error::HTTPError(e))?;
 
         // Parse the structured response
-        let api_response: Response<T> = response.json().await.map_err(|e| Error::HTTPError(e))?;
+        let api_response = response.bytes().await.map_err(|e| Error::HTTPError(e))?;
+        let mut deserializer = serde_json::Deserializer::from_slice(&api_response);
+        let json_response: Response<T> = serde_path_to_error::deserialize(&mut deserializer)
+            .map_err(|e| Error::DeserializationError(e))?;
 
         // Extract data or convert error
-        match (api_response.data, api_response.error) {
+        match (json_response.data, json_response.error) {
             (Some(data), _) => Ok(data),
             (None, Some(err)) => Err(Error::from(err)),
             (None, None) => Err(Error::UnexpectedResponse(format!(
                 "No data or error: {}",
-                api_response.message
+                json_response.message
             ))),
         }
     }
@@ -55,10 +58,13 @@ impl ClientInner {
         let response = request.send().await.map_err(|e| Error::HTTPError(e))?;
 
         // Parse the structured response
-        let api_response: Response = response.json().await.map_err(|e| Error::HTTPError(e))?;
+        let api_response = response.bytes().await.map_err(|e| Error::HTTPError(e))?;
+        let mut deserializer = serde_json::Deserializer::from_slice(&api_response);
+        let json_response: Response = serde_path_to_error::deserialize(&mut deserializer)
+            .map_err(|e| Error::DeserializationError(e))?;
 
         // Extract data or convert error
-        if let Some(error) = api_response.error {
+        if let Some(error) = json_response.error {
             Err(Error::from(error))
         } else {
             Ok(())
@@ -145,11 +151,7 @@ mod tests {
 
         server.mock(|when, then| {
             when.method(GET).path("/api/v1/ping");
-            then.status(200).json_body(json!({
-                "status": 200,
-                "message": "Ping received!",
-                "data": "pong"
-            }));
+            then.status(200).body_from_file("test_data/ping.json");
         });
 
         let client = Client::builder()
