@@ -1,5 +1,5 @@
 use bon::{Builder, bon, builder};
-use reqwest::Client as HttpClient;
+use reqwest::{Client as HttpClient, header::HeaderValue};
 use serde::Deserialize;
 use std::sync::Arc;
 
@@ -37,7 +37,7 @@ impl ClientInner {
     ) -> Result<T> {
         let response = request.send().await.map_err(|e| Error::HTTPError(e))?;
 
-        // Parse the structured response
+        // Parse JSON response
         let api_response = response.bytes().await.map_err(|e| Error::HTTPError(e))?;
         let mut deserializer = serde_json::Deserializer::from_slice(&api_response);
         let json_response: Response<T> = serde_path_to_error::deserialize(&mut deserializer)
@@ -57,7 +57,7 @@ impl ClientInner {
     pub(crate) async fn request(&self, request: reqwest::RequestBuilder) -> Result<()> {
         let response = request.send().await.map_err(|e| Error::HTTPError(e))?;
 
-        // Parse the structured response
+        // Parse JSON response
         let api_response = response.bytes().await.map_err(|e| Error::HTTPError(e))?;
         let mut deserializer = serde_json::Deserializer::from_slice(&api_response);
         let json_response: Response = serde_path_to_error::deserialize(&mut deserializer)
@@ -68,6 +68,42 @@ impl ClientInner {
             Err(Error::from(error))
         } else {
             Ok(())
+        }
+    }
+
+    pub(crate) async fn request_bytes(&self, request: reqwest::RequestBuilder) -> Result<Vec<u8>> {
+        let response = request.send().await.map_err(|e| Error::HTTPError(e))?;
+
+        let content_type = response.headers().get("Content-Type");
+
+        dbg!(&content_type);
+
+        if let Some(content_type) = content_type
+            && content_type
+                .to_str()
+                .expect("Invalid Content-Type")
+                .contains("application/json")
+        {
+            // Parse JSON response
+            let api_response = response.bytes().await.map_err(|e| Error::HTTPError(e))?;
+            let mut deserializer = serde_json::Deserializer::from_slice(&api_response);
+            let json_response: Response = serde_path_to_error::deserialize(&mut deserializer)
+                .map_err(|e| Error::DeserializationError(e))?;
+
+            // Extract data or convert error
+            if let Some(error) = json_response.error {
+                Err(Error::from(error))
+            } else {
+                Err(Error::UnexpectedResponse(
+                    "Expected JSON response".to_string(),
+                ))
+            }
+        } else {
+            Ok(response
+                .bytes()
+                .await
+                .map_err(|e| Error::HTTPError(e))?
+                .to_vec())
         }
     }
 }

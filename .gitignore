@@ -16,3 +16,6 @@
 .flatpak-builder/
 .DS_Store
 .fenv
+
+# Secrets
+.env

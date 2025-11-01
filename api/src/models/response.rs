@@ -75,7 +75,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_known_error_response() {
+    fn parse_known_error_response() {
         let json = r#"{
             "status": 401,
             "message": "You are not authorized to access this resource",
@@ -108,7 +108,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_unknown_error_response() {
+    fn parse_unknown_error_response() {
         let json = r#"{
             "status": 418,
             "message": "I'm a teapot",
@@ -141,7 +141,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_success_response() {
+    fn parse_success_response() {
         let json = r#"{
             "status": 200,
             "message": "Ping received!",

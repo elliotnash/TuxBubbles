@@ -48,12 +48,12 @@ impl Chat {
     }
 
     #[builder(finish_fn(name = send))]
-    pub async fn get_icon(&self, guid: &str) -> Result<()> {
+    pub async fn get_icon(&self, guid: &str) -> Result<Vec<u8>> {
         let req = self.inner.http.get(format!(
             "{}/api/v1/chat/{}/icon?password={}",
             self.inner.server_url, guid, self.inner.password
         ));
-        self.inner.request(req).await
+        self.inner.request_bytes(req).await
     }
 
     #[builder(finish_fn(name = send))]
@@ -163,27 +163,17 @@ impl<'f1, S: chat_query_builder::State> ChatQueryBuilder<'f1, S> {
 
 #[cfg(test)]
 mod tests {
-    use httpmock::prelude::*;
-    use serde_json::json;
-
     use crate::client::Client;
 
     #[tokio::test]
-    async fn test() {
-        let server = MockServer::start_async().await;
-
-        server.mock(|when, then| {
-            when.method(GET).path("/api/v1/ping");
-            then.status(200).json_body(json!({
-                "status": 200,
-                "message": "Ping received!",
-                "data": "pong"
-            }));
-        });
+    async fn query() {
+        dotenv::dotenv().ok();
+        let server_url = std::env::var("BB_SERVER_URL").expect("BB_SERVER_URL must be set");
+        let password = std::env::var("BB_PASSWORD").expect("BB_PASSWORD must be set");
 
         let client = Client::builder()
-            .server_url(server.base_url())
-            .password("password")
+            .server_url(server_url)
+            .password(password)
             .build();
         let res = client
             .chats()
@@ -194,16 +184,6 @@ mod tests {
             .send()
             .await;
 
-        dbg!(&res);
-        match res {
-            Err(crate::error::Error::DeserializationError(e)) => {
-                dbg!(&e);
-            }
-            _ => {}
-        }
-
-        let chat = client.chats().get().guid("SMS;-;+12023896015").send().await;
-        dbg!(chat);
-        // assert!(res.is_ok());
+        assert!(res.is_ok());
     }
 }
