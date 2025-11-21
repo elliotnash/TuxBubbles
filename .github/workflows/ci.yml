@@ -12,7 +12,7 @@ jobs:
     env:
       CARGO_TERM_COLOR: always
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
@@ -31,7 +31,7 @@ jobs:
     env:
       CARGO_TERM_COLOR: always
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
       with:
         bundle: tuxbubbles.flatpak
