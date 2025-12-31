@@ -70,7 +70,7 @@ pub struct Message {
     #[serde(rename = "originalROWID")]
     pub original_row_id: i64,
     pub guid: String,
-    pub text: String,
+    pub text: Option<String>,
     pub attributed_body: Option<String>,
     pub handle: Option<String>,
     pub handle_id: i64,

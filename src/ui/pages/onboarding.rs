@@ -64,7 +64,6 @@ pub enum OnboardingPageMsg {
     UrlEntered,
     PasswordChanged(String),
     Connect,
-    Sync,
 }
 
 pub struct OnboardingPage {

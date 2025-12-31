@@ -224,7 +224,7 @@ mod tests {
             .send()
             .await;
 
-        assert!(res.is_ok());
+        res.expect("Failed to query messages");
     }
     #[tokio::test]
     async fn get_messages() {
@@ -242,5 +242,7 @@ mod tests {
             .guid("SMS;-;+12023896015")
             .send()
             .await;
+
+        res.expect("Failed to get messages");
     }
 }
