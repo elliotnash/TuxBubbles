@@ -17,7 +17,7 @@ bon = "3.8"
 thiserror = "2.0"
 async-trait = "0.1.89"
 chrono = { version = "0.4", features = ["serde"] }
-uuid = { version = "1.18", features = ["v4", "serde"] }
+uuid = { version = "1.19", features = ["v4", "serde"] }
 
 [dev-dependencies]
 httpmock = "0.8"
