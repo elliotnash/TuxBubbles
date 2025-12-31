@@ -17,7 +17,7 @@ bluebubbles-api = { path = "./api" }
 gettext-rs = { version = "0.7", features = ["gettext-system"] }
 relm4 = { version = "0.10.0", features = ["libadwaita", "gnome_48"] }
 libadwaita = { version = "0.8.1", features = ["v1_8"] }
-tracing = "0.1.41"
+tracing = "0.1.43"
 tracing-subscriber = "0.3"
 
 reqwest = { version = "0.12", features = ["json", "rustls-tls-no-provider"] }
