@@ -2,9 +2,9 @@ use std::{fmt, sync::LazyLock};
 
 use fancy_regex::Regex;
 use gettextrs::gettext;
-use libadwaita::prelude::{EntryRowExt, PreferencesRowExt};
+use libadwaita::prelude::{EntryRowExt, NavigationPageExt, PreferencesRowExt};
 use relm4::{
-    ComponentParts, ComponentSender, RelmWidgetExt, SimpleComponent,
+    Component, ComponentParts, ComponentSender, RelmWidgetExt, WidgetTemplate,
     actions::ActionName,
     adw,
     gtk::{
@@ -47,18 +47,12 @@ impl OnboardingStep {
             _ => Self::Sync,
         }
     }
-    fn previous(&self) -> Self {
-        match self {
-            Self::Sync => Self::Connection,
-            _ => Self::Welcome,
-        }
-    }
 }
 
 #[derive(Debug, PartialEq)]
 pub enum OnboardingPageMsg {
     NextPage,
-    PreviousPage,
+    SyncStepFromTag(String),
     ToggleSyncAll,
     UrlChanged(String),
     UrlEntered,
@@ -68,7 +62,6 @@ pub enum OnboardingPageMsg {
 
 pub struct OnboardingPage {
     step: OnboardingStep,
-    transition: gtk::StackTransitionType,
     url: String,
     url_error: Option<String>,
     password: String,
@@ -77,48 +70,79 @@ pub struct OnboardingPage {
     sync_all: bool,
 }
 
-#[relm4::component(pub)]
-impl SimpleComponent for OnboardingPage {
-    type Input = OnboardingPageMsg;
-    type Output = ();
-    type Init = ();
-
+#[relm4::widget_template(pub)]
+impl WidgetTemplate for OnboardingToolbar {
     view! {
-        #[root]
         adw::ToolbarView {
             add_top_bar = &adw::HeaderBar {
-                pack_start = &gtk::Revealer {
-                    #[watch]
-                    set_reveal_child: model.step != OnboardingStep::Welcome,
-                    set_transition_type: gtk::RevealerTransitionType::Crossfade,
-
-                    gtk::Button {
-                      set_tooltip_text: Some(&gettext("Previous Page")),
-                      set_icon_name: "go-previous-symbolic",
-                      connect_clicked => OnboardingPageMsg::PreviousPage,
-                    }
-                },
-
                 pack_end = &gtk::Button {
                     set_icon_name: "help-about-symbolic",
                     set_action_name: Some(&AboutAction::action_name()),
                     set_tooltip_text: Some(&gettext("About TuxBubbles"))
                 }
             },
+        }
+    }
+}
 
-            set_content: Some(&stack)
+#[relm4::component(pub)]
+impl Component for OnboardingPage {
+    type Input = OnboardingPageMsg;
+    type Output = ();
+    type Init = ();
+    type CommandOutput = ();
 
+    view! {
+        // #[root]
+        // adw::ToolbarView {
+        //     add_top_bar = &adw::HeaderBar {
+        //         pack_end = &gtk::Button {
+        //             set_icon_name: "help-about-symbolic",
+        //             set_action_name: Some(&AboutAction::action_name()),
+        //             set_tooltip_text: Some(&gettext("About TuxBubbles"))
+        //         }
+        //     },
+
+        //     set_content: Some(&navigation_view)
+
+        // },
+        // navigation_view = &adw::NavigationView {
+        //     add: &welcome_page,
+        //     add: &connection_page,
+        //     add: &sync_page,
+        // },
+        #[root]
+        navigation_view = &adw::NavigationView {
+            add: &welcome_page,
+            add: &connection_page,
+            add: &sync_page,
         },
-        stack = &gtk::Stack {
-            add_titled: (&welcome, Some(&OnboardingStep::Welcome.to_string()), &gettext("Welcome to TuxBubbles")),
-            add_titled: (&connection, Some(&OnboardingStep::Connection.to_string()), &gettext("Connect to your BlueBubbles instance")),
-            add_titled: (&sync, Some(&OnboardingStep::Sync.to_string()), &gettext("Sync your message")),
+        welcome_page = &adw::NavigationPage {
+            set_title: &gettext("Welcome to TuxBubbles"),
+            set_tag: Some(&OnboardingStep::Welcome.to_string()),
 
-            #[watch]
-            set_transition_type: model.transition,
+            #[template]
+            OnboardingToolbar {
+                set_content: Some(&welcome)
+            }
+        },
+        connection_page = &adw::NavigationPage {
+            set_title: &gettext("Connect to your BlueBubbles instance"),
+            set_tag: Some(&OnboardingStep::Connection.to_string()),
 
-            #[watch]
-            set_visible_child_name: &model.step.to_string()
+            #[template]
+            OnboardingToolbar {
+                set_content: Some(&connection)
+            }
+        },
+        sync_page = &adw::NavigationPage {
+            set_title: &gettext("Sync your message"),
+            set_tag: Some(&OnboardingStep::Sync.to_string()),
+
+            #[template]
+            OnboardingToolbar {
+                set_content: Some(&sync)
+            }
         },
         welcome = &adw::StatusPage {
             set_icon_name: Some(APP_ID),
@@ -289,7 +313,6 @@ impl SimpleComponent for OnboardingPage {
 
         let model = Self {
             step: OnboardingStep::Welcome,
-            transition: gtk::StackTransitionType::SlideLeft,
             sync_all: false,
             url_error: None,
             password_error: None,
@@ -299,18 +322,48 @@ impl SimpleComponent for OnboardingPage {
         };
         let widgets = view_output!();
 
+        // Initialize NavigationView with the welcome page
+        root.push_by_tag(&OnboardingStep::Welcome.to_string());
+
+        // Connect to the popped signal to update step when back button is clicked
+        let nav_sender = sender.clone();
+        widgets
+            .navigation_view
+            .connect_popped(move |nav_view, _popped_page| {
+                // Get the currently visible page after the pop and sync step accordingly
+                if let Some(visible_page) = nav_view.visible_page() {
+                    if let Some(tag) = visible_page.tag() {
+                        nav_sender
+                            .input(OnboardingPageMsg::SyncStepFromTag(tag.as_str().to_string()));
+                    }
+                }
+            });
+
         ComponentParts { model, widgets }
     }
 
-    fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>) {
+    fn update_with_view(
+        &mut self,
+        widgets: &mut Self::Widgets,
+        message: Self::Input,
+        sender: ComponentSender<Self>,
+        root: &Self::Root,
+    ) {
+        // Handle navigation and model updates together
         match message {
             OnboardingPageMsg::NextPage => {
                 self.step = self.step.next();
-                self.transition = gtk::StackTransitionType::SlideLeft;
+                root.push_by_tag(&self.step.to_string());
             }
-            OnboardingPageMsg::PreviousPage => {
-                self.step = self.step.previous();
-                self.transition = gtk::StackTransitionType::SlideRight;
+            OnboardingPageMsg::SyncStepFromTag(tag) => {
+                // Sync step with the visible page's tag (used when back button is clicked)
+                if tag == OnboardingStep::Welcome.to_string() {
+                    self.step = OnboardingStep::Welcome;
+                } else if tag == OnboardingStep::Connection.to_string() {
+                    self.step = OnboardingStep::Connection;
+                } else if tag == OnboardingStep::Sync.to_string() {
+                    self.step = OnboardingStep::Sync;
+                }
             }
             OnboardingPageMsg::ToggleSyncAll => self.sync_all = !self.sync_all,
             OnboardingPageMsg::UrlChanged(url) => {
@@ -352,7 +405,9 @@ impl SimpleComponent for OnboardingPage {
                     self.connecting = false;
                 }
             }
-            _ => (),
         }
+
+        // Update the view
+        self.update_view(widgets, sender);
     }
 }
