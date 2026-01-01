@@ -30,12 +30,16 @@ pub struct Chat {
     pub chat_identifier: String,
     pub is_archived: bool,
     pub display_name: String,
+    #[serde(default)]
     pub participants: Vec<Participant>,
-    pub is_filtered: bool,
-    pub group_id: String,
+    pub is_filtered: Option<bool>,
+    pub group_id: Option<String>,
+    #[serde(default)]
     pub properties: Vec<ChatProperty>,
     pub last_addressed_handle: String,
     pub last_message: Option<Message>,
+    #[serde(default)]
+    pub messages: Vec<Message>,
 }
 
 /// Represents a participant in a chat
@@ -72,7 +76,7 @@ pub struct Message {
     pub guid: String,
     pub text: Option<String>,
     pub attributed_body: Option<String>,
-    pub handle: Option<String>,
+    // pub handle: Option<String>,
     pub handle_id: i64,
     pub other_handle: i64,
     pub attachments: Vec<Attachment>,
@@ -113,7 +117,7 @@ pub struct Message {
     pub share_direction: i64,
     pub was_delivered_quietly: bool,
     pub did_notify_recipient: bool,
-    pub chats: Vec<String>,
+    pub chats: Vec<Chat>,
     pub message_summary_info: Option<String>,
     pub payload_data: Option<String>,
     pub date_edited: Option<i64>,

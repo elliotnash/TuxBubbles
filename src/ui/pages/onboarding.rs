@@ -395,12 +395,12 @@ impl Component for OnboardingPage {
                     // try to connect to the server
 
                     // Simulate an invalid password
-                    if true {
+                    if false {
                         self.password_error = Some(gettext("Invalid credentials"));
                         APP_BROKER.send(AppMsg::ShowToast(gettext("Invalid credentials")));
+                    } else {
+                        sender.input(OnboardingPageMsg::NextPage);
                     }
-
-                    // sender.input(OnboardingPageMsg::NextPage);
 
                     self.connecting = false;
                 }
