@@ -175,25 +175,25 @@ impl Client {
 }
 
 #[cfg(test)]
-mod tests {
-    use httpmock::prelude::*;
-    use serde_json::json;
-
+pub(crate) mod tests {
     use super::*;
+
+    pub fn get_test_client() -> Client {
+        dotenv::dotenv().ok();
+        let server_url = std::env::var("BB_SERVER_URL").expect("BB_SERVER_URL must be set");
+        let password = std::env::var("BB_PASSWORD").expect("BB_PASSWORD must be set");
+
+        let client = Client::builder()
+            .server_url(server_url)
+            .password(password)
+            .build();
+
+        client
+    }
 
     #[tokio::test]
     async fn ping() {
-        let server = MockServer::start_async().await;
-
-        server.mock(|when, then| {
-            when.method(GET).path("/api/v1/ping");
-            then.status(200).body_from_file("test_data/ping.json");
-        });
-
-        let client = Client::builder()
-            .server_url(server.url(""))
-            .password("password")
-            .build();
+        let client = get_test_client();
         let res = client.ping().send().await;
         assert_eq!(res.expect("Ping failed"), "pong");
     }

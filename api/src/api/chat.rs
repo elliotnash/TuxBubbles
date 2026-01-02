@@ -204,17 +204,12 @@ impl<'f1, S: chat_query_builder::State> ChatQueryBuilder<'f1, S> {
 #[cfg(test)]
 mod tests {
     use crate::client::Client;
+    use crate::client::tests::get_test_client;
 
     #[tokio::test]
     async fn query() {
-        dotenv::dotenv().ok();
-        let server_url = std::env::var("BB_SERVER_URL").expect("BB_SERVER_URL must be set");
-        let password = std::env::var("BB_PASSWORD").expect("BB_PASSWORD must be set");
+        let client = get_test_client();
 
-        let client = Client::builder()
-            .server_url(server_url)
-            .password(password)
-            .build();
         let res = client
             .chats()
             .query()
@@ -228,14 +223,8 @@ mod tests {
     }
     #[tokio::test]
     async fn get_messages() {
-        dotenv::dotenv().ok();
-        let server_url = std::env::var("BB_SERVER_URL").expect("BB_SERVER_URL must be set");
-        let password = std::env::var("BB_PASSWORD").expect("BB_PASSWORD must be set");
+        let client = get_test_client();
 
-        let client = Client::builder()
-            .server_url(server_url)
-            .password(password)
-            .build();
         let res = client
             .chats()
             .get_messages()
